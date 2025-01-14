@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
-
+import 'add_time_entry_page.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<TimeEntry> _timeEntries = [];
 
 
-  @override
+ @override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
@@ -64,8 +64,18 @@ Widget build(BuildContext context) {
           ),
     floatingActionButton: FloatingActionButton(
       onPressed: () {
-        // TODO: Navigate to Add Time Entry Screen
-        print('Add Time Entry button pressed');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddTimeEntryPage(
+              onAdd: (newEntry) {
+                setState(() {
+                  _timeEntries.add(newEntry);
+                });
+              },
+            ),
+          ),
+        );
       },
       tooltip: 'Add Time Entry',
       child: const Icon(Icons.add),
