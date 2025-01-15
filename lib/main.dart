@@ -1,9 +1,11 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
 import 'add_time_entry_page.dart';
 import 'project.dart';
 import 'project_list_page.dart';
-import 'dart:async';
+import 'dart:async'; // Import for Timer
 
 void main() {
   runApp(const MyApp());
@@ -15,8 +17,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Timesheet Tracker',
+      debugShowCheckedModeBanner: false, // Remove debug banner
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -39,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<TimeEntry> _timeEntries = [];
   List<Project> _projects = [];
 
+  // State variables for Clock In/Out
   bool _isClockedIn = false;
   DateTime? _clockInTime;
   Timer? _timer;
@@ -46,8 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
   double _currentEarnings = 0.0;
   Project? _currentProject;
 
+  /// Starts the clocking in process with project selection
   void _clockIn() async {
-    if (_isClockedIn) return;
+    if (_isClockedIn) return; // Prevent multiple clock-ins
 
     if (_projects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    // Prompt user to select a project
     Project? selectedProject = await showDialog<Project>(
       context: context,
       builder: (BuildContext context) {
@@ -98,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop(); // Cancel
               },
               child: const Text('Cancel'),
             ),
@@ -115,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
 
-    if (selectedProject == null) return; 
+    if (selectedProject == null) return; // User canceled
 
     setState(() {
       _isClockedIn = true;
@@ -125,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _currentProject = selectedProject;
     });
 
+    // Start a timer that updates every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       setState(() {
@@ -134,8 +140,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Stops the clocking out process
   void _clockOut() {
-    if (!_isClockedIn) return;
+    if (!_isClockedIn) return; // Prevent clock-out if not clocked in
 
     final clockOutTime = DateTime.now();
 
@@ -144,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _timer?.cancel();
     });
 
-    
+    // Create a new TimeEntry
     final newEntry = TimeEntry(
       date: DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
@@ -157,6 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _timeEntries.add(newEntry);
     });
 
+    // Reset current tracking variables
     setState(() {
       _elapsed = Duration.zero;
       _currentEarnings = 0.0;
@@ -165,6 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Navigates to the Add Time Entry Page
   void _navigateToAddEntry() {
     Navigator.push(
       context,
@@ -175,12 +184,13 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          projects: _projects, 
+          projects: _projects, // Passing the list of projects
         ),
       ),
     );
   }
 
+  /// Navigates to the Project Management Page
   void _navigateToManageProjects() {
     Navigator.push(
       context,
@@ -204,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel(); 
+    _timer?.cancel(); // Cancel timer if active
     super.dispose();
   }
 
@@ -212,6 +222,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     double totalEarnings =
         _timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
+
+    // Calculate Total Hours Logged
+    double totalHoursLogged =
+        _timeEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
 
     return Scaffold(
       appBar: AppBar(
@@ -240,6 +254,147 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SafeArea(
         child: Column(
           children: [
+            // Summary Metrics Section
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  // Total Hours Logged Card
+                  Expanded(
+                    child: Card(
+                      color: Colors.blue[50],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Total Hours Logged',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '${totalHoursLogged.toStringAsFixed(2)} hrs',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  // Total Earnings Card
+                  Expanded(
+                    child: Card(
+                      color: Colors.green[50],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Total Earnings',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '\$${totalEarnings.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Active Session Display (if any)
+            if (_isClockedIn)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Card(
+                  color: Colors.blue[50],
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Active Session',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Project: ${_currentProject!.name}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Elapsed Time:',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            Text(
+                              _formatDuration(_elapsed),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Current Earnings:',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            Text(
+                              '\$${_currentEarnings.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: _clockOut,
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Clock Out'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red, // Corrected from foregroundColor
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Time Entries List
             Expanded(
               child: _timeEntries.isEmpty
                   ? Center(
@@ -277,75 +432,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                     ),
             ),
-            if (_isClockedIn)
-              Card(
-                color: Colors.blue[50],
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Active Session',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Project: ${_currentProject!.name}',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Elapsed Time:',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          Text(
-                            _formatDuration(_elapsed),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Current Earnings:',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          Text(
-                            '\$${_currentEarnings.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      ElevatedButton.icon(
-                        onPressed: _clockOut,
-                        icon: const Icon(Icons.logout),
-                        label: const Text('Clock Out'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red, 
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -354,7 +440,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Add Time Entry',
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Updated Location
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16.0),
         color: Colors.grey[200],
@@ -381,15 +467,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ); 
   }
+    String _formatDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+      return '${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
+    }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return '${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
-  }
-
-  String _twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
-  }
+    String _twoDigits(int n) {
+      return n.toString().padLeft(2, '0');
+    }
 }
