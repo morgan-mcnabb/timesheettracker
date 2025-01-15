@@ -507,129 +507,166 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 // Active Session Display Section
                 if (_isClockedIn) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Card(
-                      color: Colors.orange[50],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  _isPaused ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                                  color: _isPaused ? Colors.orange : Colors.green,
-                                  size: 30,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Active Session',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[800],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.business, color: Colors.grey[700]),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Project:',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  _currentProject!.name,
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.timer, color: Colors.grey[700]),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Elapsed Time:',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  _formatDuration(_elapsed),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.attach_money, color: Colors.grey[700]),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Current Earnings:',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                                Text(
-                                  '\$${_currentEarnings.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: _isPaused ? _resumeClock : _pauseClock,
-                                  icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
-                                  label: Text(_isPaused ? 'Resume' : 'Pause'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: _isPaused ? Colors.green : Colors.orange,
-                                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                // **Clock-Out Button Removed from Active Session Section**
-                                // The Clock-Out functionality is now handled within the Project Card
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    child: Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      shadowColor: Colors.deepPurple.withOpacity(0.2),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.deepPurple.shade50,
+              Colors.deepPurple.shade100,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            Row(
+              children: [
+                Icon(
+                  _isPaused ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                  color: _isPaused ? Colors.orange : Colors.green,
+                  size:  32,
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Active Session',
+                  style: TextStyle(
+                    fontSize:  24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple[800],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height:  20),
+            
+            // Project Information
+            Row(
+              children: [
+                Icon(Icons.business, color: Colors.deepPurple[700], size:  20),
+                SizedBox(width:  8),
+                Expanded(
+                  child: Text(
+                    _currentProject!.name,
+                    style: TextStyle(
+                      fontSize:  18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.deepPurple[800],
                     ),
                   ),
-                ],
-
+                ),
+              ],
+            ),
+            SizedBox(height:  16),
+            
+            // Elapsed Time and Earnings
+            Row(
+              children: [
+                // Elapsed Time
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Elapsed Time',
+                        style: TextStyle(
+                          fontSize:  14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      SizedBox(height:  4),
+                      Text(
+                        _formatDuration(_elapsed),
+                        style: TextStyle(
+                          fontSize:  20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple[900],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Current Earnings
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Current Earnings',
+                        style: TextStyle(
+                          fontSize:  14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      SizedBox(height:  4),
+                      Text(
+                        '\$${_currentEarnings.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize:  20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height:  20),
+            
+            // Action Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Pause/Resume Button
+                ElevatedButton.icon(
+                  onPressed: _isPaused ? _resumeClock : _pauseClock,
+                  icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+                  label: Text(_isPaused ? 'Resume' : 'Pause'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:_isPaused ? Colors.green : Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal:  16, vertical:  12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular( 8),
+                    ),
+                  ),
+                ),
+                SizedBox(width:  12),
+                // Clock-Out Button
+                ElevatedButton.icon(
+                  onPressed: _clockOut,
+                  icon: Icon(Icons.logout),
+                  label: Text('Clock Out'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal:  16, vertical:  12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular( 8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+],
                 SizedBox(height: 24),
 
                 // Recent Time Entries Section
@@ -844,7 +881,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: _navigateToAddEntry,
             tooltip: 'Add Time Entry',
             child: const Icon(Icons.add),
-            backgroundColor: Colors.deepPurple, // Consistent color with theme
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white
           ),
         ),
       ),
