@@ -665,39 +665,45 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddEntry,
-        tooltip: 'Add Time Entry',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Updated Location
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16.0),
-        color: Colors.grey[200],
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Total Earnings:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '\$${totalEarnings.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.green[700],
-              ),
-            ),
-          ],
+      // **Refined FAB Positioning: Removed Bottom "Total Earnings" and Added Padding Above FAB**
+      floatingActionButton: SafeArea( // Ensures FAB respects safe areas
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16.0), // Adds padding above FAB
+          child: FloatingActionButton(
+            onPressed: _navigateToAddEntry,
+            tooltip: 'Add Time Entry',
+            child: const Icon(Icons.add),
+          ),
         ),
-      ));
-    }
-
-
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Keeps FAB at the end float position
+      // Removed the bottomNavigationBar to prevent overlapping and redundancy
+      // bottomNavigationBar: Container(
+      //   padding: const EdgeInsets.all(16.0),
+      //   color: Colors.grey[200],
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //     children: [
+      //       const Text(
+      //         'Total Earnings:',
+      //         style: TextStyle(
+      //           fontSize: 18,
+      //           fontWeight: FontWeight.bold,
+      //         ),
+      //       ),
+      //       Text(
+      //         '\$${totalEarnings.toStringAsFixed(2)}',
+      //         style: TextStyle(
+      //           fontSize: 18,
+      //           fontWeight: FontWeight.bold,
+      //           color: Colors.green[700],
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
+    );
+}
 
     String _formatDuration(Duration duration) {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
