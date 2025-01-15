@@ -1,9 +1,12 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
 import 'add_time_entry_page.dart';
 import 'project.dart';
 import 'project_list_page.dart';
-import 'dart:async'; 
+import 'dart:async'; // Import for Timer
+
 void main() {
   runApp(const MyApp());
 }
@@ -15,7 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Timesheet Tracker',
-      debugShowCheckedModeBanner: false, 
+      debugShowCheckedModeBanner: false, // Remove debug banner
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -51,77 +54,9 @@ class _MyHomePageState extends State<MyHomePage> {
   double _currentEarnings = 0.0;
   Project? _currentProject;
 
-  void _clockIn() async {
-    if (_isClockedIn) return; 
-
-    if (_projects.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a project first before clocking in.')),
-      );
-      return;
-    }
-
-    Project? selectedProject = await showDialog<Project>(
-      context: context,
-      builder: (BuildContext context) {
-        Project? tempSelectedProject;
-        final _formKey = GlobalKey<FormState>();
-
-        return AlertDialog(
-          title: const Text('Select Project'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<Project>(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.work_outline),
-                    labelText: 'Project',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _projects
-                      .map(
-                        (project) => DropdownMenuItem<Project>(
-                          value: project,
-                          child: Text(project.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (Project? newValue) {
-                    tempSelectedProject = newValue;
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select a project';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); 
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  Navigator.of(context).pop(tempSelectedProject);
-                }
-              },
-              child: const Text('Select'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (selectedProject == null) return; 
+  /// Starts the clocking in process with project selection
+  void _clockIn(Project project) async {
+    if (_isClockedIn) return; // Prevent multiple clock-ins
 
     setState(() {
       _isClockedIn = true;
@@ -130,9 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _elapsed = Duration.zero;
       _accumulated = Duration.zero;
       _currentEarnings = 0.0;
-      _currentProject = selectedProject;
+      _currentProject = project;
     });
 
+    // Start a timer that updates every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       setState(() {
@@ -142,22 +78,25 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Pauses the active session
   void _pauseClock() {
     if (!_isClockedIn || _isPaused) return;
 
     setState(() {
       _isPaused = true;
       _accumulated += DateTime.now().difference(_clockInTime!);
-      _timer?.cancel(); 
+      _timer?.cancel(); // Stop the timer
     });
   }
 
+  /// Resumes the paused session
   void _resumeClock() {
     if (!_isClockedIn || !_isPaused) return;
 
     setState(() {
       _isPaused = false;
       _clockInTime = DateTime.now();
+      // Restart the timer
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         final now = DateTime.now();
         setState(() {
@@ -168,8 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Stops the clocking out process
   void _clockOut() {
-    if (!_isClockedIn) return; 
+    if (!_isClockedIn) return; // Prevent clock-out if not clocked in
 
     final clockOutTime = DateTime.now();
 
@@ -179,11 +119,13 @@ class _MyHomePageState extends State<MyHomePage> {
       _timer?.cancel();
     });
 
+    // Calculate total elapsed time
     Duration totalElapsed = _accumulated;
     if (!_isPaused && _clockInTime != null) {
       totalElapsed += clockOutTime.difference(_clockInTime!);
     }
 
+    // Create a new TimeEntry
     final newEntry = TimeEntry(
       date: DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
@@ -202,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  /// Navigates to the Add Time Entry Page
   void _navigateToAddEntry() {
     Navigator.push(
       context,
@@ -212,12 +155,13 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          projects: _projects, 
+          projects: _projects, // Passing the list of projects
         ),
       ),
     );
   }
 
+  /// Navigates to the Project Management Page
   void _navigateToManageProjects() {
     Navigator.push(
       context,
@@ -241,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel(); 
+    _timer?.cancel(); // Cancel timer if active
     super.dispose();
   }
 
@@ -250,9 +194,11 @@ class _MyHomePageState extends State<MyHomePage> {
     double totalEarnings =
         _timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
 
+    // Calculate Total Hours Logged
     double totalHoursLogged =
         _timeEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
 
+    // Calculate Project-Specific Metrics
     Map<String, Map<String, double>> projectMetrics = {};
     for (var project in _projects) {
       projectMetrics[project.name] = {
@@ -269,12 +215,16 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
+    // Determine Recent Time Entries (last 5)
     List<TimeEntry> recentEntries = List.from(_timeEntries);
+    // Sort the list by date descending
     recentEntries.sort((a, b) {
+      // Combine date and startTime to get the actual start DateTime
       DateTime aStart = DateTime(a.date.year, a.date.month, a.date.day, a.startTime.hour, a.startTime.minute);
       DateTime bStart = DateTime(b.date.year, b.date.month, b.date.day, b.startTime.hour, b.startTime.minute);
       return bStart.compareTo(aStart);
     });
+    // Take the first 5 entries
     recentEntries = recentEntries.take(5).toList();
 
     return Scaffold(
@@ -287,30 +237,34 @@ class _MyHomePageState extends State<MyHomePage> {
             tooltip: 'Manage Projects',
             onPressed: _navigateToManageProjects,
           ),
-          if (!_isClockedIn)
-            IconButton(
-              icon: const Icon(Icons.login),
-              tooltip: 'Clock In',
-              onPressed: _clockIn,
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Clock Out',
-              onPressed: _clockOut,
-            ),
+          // **Removed Clock-In/Clock-Out Buttons from AppBar**
+          // Previously:
+          // if (!_isClockedIn)
+          //   IconButton(
+          //     icon: const Icon(Icons.login),
+          //     tooltip: 'Clock In',
+          //     onPressed: _clockIn,
+          //   )
+          // else
+          //   IconButton(
+          //     icon: const Icon(Icons.logout),
+          //     tooltip: 'Clock Out',
+          //     onPressed: _clockOut,
+          //   ),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView( 
+        child: SingleChildScrollView( // Made the entire body scrollable
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Column(
               children: [
+                // Summary Metrics Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     children: [
+                      // Total Hours Logged Card
                       Expanded(
                         child: Card(
                           color: Colors.blue[50],
@@ -350,6 +304,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       SizedBox(width: 16),
+                      // Total Earnings Card
                       Expanded(
                         child: Card(
                           color: Colors.green[50],
@@ -393,8 +348,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
 
-                SizedBox(height: 24), 
+                SizedBox(height: 24),
 
+                // Projects Overview Section
                 if (_projects.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -418,7 +374,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   SizedBox(height: 16),
                   SizedBox(
-                    height: 220, 
+                    height: 220, // Increased height for better card display
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -426,6 +382,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemBuilder: (context, index) {
                         final project = _projects[index];
                         final metrics = projectMetrics[project.name]!;
+
+                        bool isActiveProject = _isClockedIn && _currentProject == project;
 
                         return Card(
                           margin: const EdgeInsets.only(right: 16.0),
@@ -444,12 +402,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   children: [
                                     Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
                                     SizedBox(width: 8),
-                                    Text(
-                                      project.name,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.deepPurple[700],
+                                    Expanded(
+                                      child: Text(
+                                        project.name,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepPurple[700],
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],
@@ -495,6 +456,44 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ],
                                 ),
+                                Spacer(),
+                                // **Added Clock-In/Clock-Out Button**
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: !_isClockedIn || (isActiveProject)
+                                        ? () {
+                                            if (!_isClockedIn) {
+                                              _clockIn(project);
+                                            } else if (isActiveProject) {
+                                              _clockOut();
+                                            }
+                                          }
+                                        : null, // Disable button if another session is active
+                                    icon: Icon(
+                                      !_isClockedIn
+                                          ? Icons.login
+                                          : Icons.logout,
+                                      size: 20,
+                                    ),
+                                    label: Text(
+                                      !_isClockedIn
+                                          ? 'Clock In'
+                                          : 'Clock Out',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: !_isClockedIn
+                                          ? Colors.deepPurple
+                                          : Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(vertical: 12.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -506,6 +505,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 SizedBox(height: 24),
 
+                // Active Session Display Section
                 if (_isClockedIn) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -619,15 +619,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 ),
                                 SizedBox(width: 12),
-                                ElevatedButton.icon(
-                                  onPressed: _clockOut,
-                                  icon: const Icon(Icons.logout),
-                                  label: const Text('Clock Out'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                  ),
-                                ),
+                                // **Clock-Out Button Removed from Active Session Section**
+                                // The Clock-Out functionality is now handled within the Project Card
                               ],
                             ),
                           ],
@@ -637,8 +630,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
 
-                SizedBox(height: 24), 
+                SizedBox(height: 24),
 
+                // Recent Time Entries Section
                 if (_timeEntries.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -728,6 +722,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               ],
                             ),
                             onTap: () {
+                              // Implement navigation to entry details or editing
                             },
                           ),
                         );
@@ -738,6 +733,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 SizedBox(height: 24),
 
+                // All Time Entries List
                 if (_timeEntries.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -760,8 +756,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: ListView.builder(
-                      shrinkWrap: true, 
-                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true, // Important to prevent unbounded height
+                      physics: NeverScrollableScrollPhysics(), // Disable inner scroll
                       itemCount: _timeEntries.length,
                       itemBuilder: (context, index) {
                         final entry = _timeEntries[index];
@@ -836,21 +832,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ],
-              ]
-              ),
+              ],
             ),
           ),
         ),
-      
-      floatingActionButton: SafeArea(
+      ),
+      floatingActionButton: SafeArea( // Ensures FAB respects safe areas
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: FloatingActionButton(
             onPressed: _navigateToAddEntry,
             tooltip: 'Add Time Entry',
             child: const Icon(Icons.add),
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.deepPurple, // Consistent color with theme
           ),
         ),
       ),
