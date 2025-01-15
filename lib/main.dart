@@ -527,41 +527,83 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           borderRadius: BorderRadius.circular(16.0),
         ),
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0), // Reduced padding for smaller card
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section
+            // Header Section with Buttons
             Row(
               children: [
                 Icon(
                   _isPaused ? Icons.pause_circle_filled : Icons.play_circle_fill,
                   color: _isPaused ? Colors.orange : Colors.green,
-                  size:  32,
+                  size: 28, // Slightly smaller icon size
                 ),
-                SizedBox(width: 12),
-                Text(
-                  'Active Session',
-                  style: TextStyle(
-                    fontSize:  24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple[800],
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Active Session',
+                    style: TextStyle(
+                      fontSize: 20, // Slightly reduced font size
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple[800],
+                    ),
                   ),
+                ),
+                // Action Buttons
+                Row(
+                  children: [
+                    // Pause/Resume Button
+                    ElevatedButton.icon(
+                      onPressed: _isPaused ? _resumeClock : _pauseClock,
+                      icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause, size: 20),
+                      label: Text(
+                        _isPaused ? 'Resume' : 'Pause',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isPaused ? Colors.green : Colors.orange,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    // Clock-Out Button
+                    ElevatedButton.icon(
+                      onPressed: _clockOut,
+                      icon: Icon(Icons.logout, size: 20),
+                      label: Text(
+                        'Clock Out',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            SizedBox(height:  20),
-            
+            SizedBox(height: 12), // Reduced spacing
+
             // Project Information
             Row(
               children: [
-                Icon(Icons.business, color: Colors.deepPurple[700], size:  20),
-                SizedBox(width:  8),
+                Icon(Icons.business, color: Colors.deepPurple[700], size: 20),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _currentProject!.name,
                     style: TextStyle(
-                      fontSize:  18,
+                      fontSize: 16, // Slightly reduced font size
                       fontWeight: FontWeight.w600,
                       color: Colors.deepPurple[800],
                     ),
@@ -569,8 +611,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ],
             ),
-            SizedBox(height:  16),
-            
+            SizedBox(height: 12), // Reduced spacing
+
             // Elapsed Time and Earnings
             Row(
               children: [
@@ -582,15 +624,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       Text(
                         'Elapsed Time',
                         style: TextStyle(
-                          fontSize:  14,
+                          fontSize: 14,
                           color: Colors.grey[700],
                         ),
                       ),
-                      SizedBox(height:  4),
+                      SizedBox(height: 4),
                       Text(
                         _formatDuration(_elapsed),
                         style: TextStyle(
-                          fontSize:  20,
+                          fontSize: 18, // Slightly reduced font size
                           fontWeight: FontWeight.bold,
                           color: Colors.deepPurple[900],
                         ),
@@ -606,57 +648,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       Text(
                         'Current Earnings',
                         style: TextStyle(
-                          fontSize:  14,
+                          fontSize: 14,
                           color: Colors.grey[700],
                         ),
                       ),
-                      SizedBox(height:  4),
+                      SizedBox(height: 4),
                       Text(
                         '\$${_currentEarnings.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontSize:  20,
+                          fontSize: 18, // Slightly reduced font size
                           fontWeight: FontWeight.bold,
                           color: Colors.green[700],
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height:  20),
-            
-            // Action Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Pause/Resume Button
-                ElevatedButton.icon(
-                  onPressed: _isPaused ? _resumeClock : _pauseClock,
-                  icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
-                  label: Text(_isPaused ? 'Resume' : 'Pause'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:_isPaused ? Colors.green : Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal:  16, vertical:  12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular( 8),
-                    ),
-                  ),
-                ),
-                SizedBox(width:  12),
-                // Clock-Out Button
-                ElevatedButton.icon(
-                  onPressed: _clockOut,
-                  icon: Icon(Icons.logout),
-                  label: Text('Clock Out'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal:  16, vertical:  12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular( 8),
-                    ),
                   ),
                 ),
               ],
