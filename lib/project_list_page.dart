@@ -1,3 +1,5 @@
+// lib/project_list_page.dart
+
 import 'package:flutter/material.dart';
 import 'project.dart';
 
@@ -33,8 +35,13 @@ class _ProjectListPageState extends State<ProjectListPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Project Name Field
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Project Name'),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.work_outline, color: Colors.deepPurple),
+                    labelText: 'Project Name',
+                    border: OutlineInputBorder(),
+                  ),
                   onChanged: (value) {
                     projectName = value;
                   },
@@ -45,9 +52,14 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     return null;
                   },
                 ),
+                SizedBox(height: 16),
+                // Hourly Rate Field
                 TextFormField(
-                  decoration:
-                      const InputDecoration(labelText: 'Hourly Rate (\$)'),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.attach_money, color: Colors.deepPurple),
+                    labelText: 'Hourly Rate (\$)',
+                    border: OutlineInputBorder(),
+                  ),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (value) {
@@ -77,6 +89,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white
+              ),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   final newProject = Project(
@@ -101,27 +117,60 @@ class _ProjectListPageState extends State<ProjectListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
       ),
       body: widget.projects.isEmpty
-          ? const Center(
-              child: Text(
-                'No projects added yet.',
-                style: TextStyle(fontSize: 18),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.business, size: 80, color: Colors.grey[400]),
+                  SizedBox(height: 16),
+                  const Text(
+                    'No projects added yet.',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
               ),
             )
           : ListView.builder(
+              padding: const EdgeInsets.all(16.0),
               itemCount: widget.projects.length,
               itemBuilder: (context, index) {
                 final project = widget.projects[index];
-                return ListTile(
-                  title: Text(project.name),
-                  subtitle: Text('Hourly Rate: \$${project.hourlyRate.toStringAsFixed(2)}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      widget.onDelete(index);
-                      setState(() {});
-                    },
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  elevation: 3,
+                  child: ListTile(
+                    leading: Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
+                    title: Text(
+                      project.name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Row(
+                      children: [
+                        Icon(Icons.attach_money, size: 16, color: Colors.grey[700]),
+                        SizedBox(width: 4),
+                        Text(
+                          '\$${project.hourlyRate.toStringAsFixed(2)} / hr',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        widget.onDelete(index);
+                        setState(() {});
+                      },
+                    ),
                   ),
                 );
               },
@@ -130,6 +179,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
         onPressed: _addProject,
         tooltip: 'Add Project',
         child: const Icon(Icons.add),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
       ),
     );
   }

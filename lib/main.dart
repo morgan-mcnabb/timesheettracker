@@ -22,8 +22,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        textTheme: TextTheme(
+          headlineMedium: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          bodySmall: TextStyle(fontSize: 16.0),
+        ),
       ),
-      home: const MyHomePage(title: 'Timesheet Tracker Home'),
+      home: const MyHomePage(title: 'Timesheet Tracker'),
     );
   }
 }
@@ -77,6 +81,11 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<Project>(
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.work_outline),
+                    labelText: 'Project',
+                    border: OutlineInputBorder(),
+                  ),
                   items: _projects
                       .map(
                         (project) => DropdownMenuItem<Project>(
@@ -94,10 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     }
                     return null;
                   },
-                  decoration: const InputDecoration(
-                    labelText: 'Project',
-                    border: OutlineInputBorder(),
-                  ),
                 ),
               ],
             ),
@@ -319,352 +324,553 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView( // Made the entire body scrollable
-          child: Column(
-            children: [
-              // Summary Metrics Section
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    // Total Hours Logged Card
-                    Expanded(
-                      child: Card(
-                        color: Colors.blue[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0), // Reduced padding from 16 to 12
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
-                            children: [
-                              const Text(
-                                'Total Hours Logged',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '${totalHoursLogged.toStringAsFixed(2)} hrs',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    // Total Earnings Card
-                    Expanded(
-                      child: Card(
-                        color: Colors.green[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0), // Reduced padding from 16 to 12
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
-                            children: [
-                              const Text(
-                                'Total Earnings',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                '\$${totalEarnings.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Projects Overview Section
-              if (_projects.isNotEmpty)
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Column(
+              children: [
+                // Summary Metrics Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Projects Overview',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ),
-                ),
-              if (_projects.isNotEmpty)
-                SizedBox(
-                  height: 180, // Increased height from 150 to 180
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: _projects.length,
-                    itemBuilder: (context, index) {
-                      final project = _projects[index];
-                      final metrics = projectMetrics[project.name]!;
-
-                      return Card(
-                        margin: const EdgeInsets.only(right: 16.0),
-                        elevation: 4,
-                        child: Container(
-                          width: 200,
-                          padding: const EdgeInsets.all(12.0), // Reduced padding from 16 to 12
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                project.name,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple[700],
+                  child: Row(
+                    children: [
+                      // Total Hours Logged Card
+                      Expanded(
+                        child: Card(
+                          color: Colors.blue[50],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            child: Row(
+                              children: [
+                                Icon(Icons.access_time, color: Colors.blue[700], size: 40),
+                                SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Total Hours Logged',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '${totalHoursLogged.toStringAsFixed(2)} hrs',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Hourly Rate: \$${project.hourlyRate.toStringAsFixed(2)}',
-                                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                              ),
-                              Divider(height: 20, color: Colors.grey[400]),
-                              Text(
-                                'Hours Logged: ${metrics['hours']!.toStringAsFixed(2)} hrs',
-                                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                              ),
-                              Text(
-                                'Earnings: \$${metrics['earnings']!.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                      SizedBox(width: 16),
+                      // Total Earnings Card
+                      Expanded(
+                        child: Card(
+                          color: Colors.green[50],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            child: Row(
+                              children: [
+                                Icon(Icons.attach_money, color: Colors.green[700], size: 40),
+                                SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Total Earnings',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '\$${totalEarnings.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-              // **Active Session Display Section (Moved Above Recent Time Entries)**
-              if (_isClockedIn)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Card(
-                    color: Colors.blue[50],
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                SizedBox(height: 24), // Added spacing between sections
+
+                // Projects Overview Section
+                if (_projects.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Active Session',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Icon(
-                                _isPaused ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                                color: _isPaused ? Colors.orange : Colors.green,
-                                size: 30,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
+                          Icon(Icons.business_center, color: Colors.grey[700]),
+                          SizedBox(width: 8),
                           Text(
-                            'Project: ${_currentProject!.name}',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Elapsed Time:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                _formatDuration(_elapsed),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Current Earnings:',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Text(
-                                '\$${_currentEarnings.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: _isPaused ? _resumeClock : _pauseClock,
-                                icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
-                                label: Text(_isPaused ? 'Resume' : 'Pause'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _isPaused ? Colors.green : Colors.orange,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                onPressed: _clockOut,
-                                icon: const Icon(Icons.logout),
-                                label: const Text('Clock Out'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red, // Corrected from foregroundColor
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Recent Time Entries Section
-              if (_timeEntries.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Recent Time Entries',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ),
-                ),
-              if (_timeEntries.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: recentEntries.map((entry) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        elevation: 3,
-                        child: ListTile(
-                          leading: const Icon(Icons.work),
-                          title: Text(entry.project.name),
-                          subtitle: Text(
-                            '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
-                              SizedBox(height: 4),
-                              Text(
-                                '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            // Implement navigation to entry details or editing
-                          },
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-              // All Time Entries List
-              if (_timeEntries.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'All Time Entries',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ),
-                ),
-              if (_timeEntries.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true, // Important to prevent unbounded height
-                  physics: NeverScrollableScrollPhysics(), // Disable inner scroll
-                  itemCount: _timeEntries.length,
-                  itemBuilder: (context, index) {
-                    final entry = _timeEntries[index];
-                    return ListTile(
-                      leading: const Icon(Icons.work),
-                      title: Text(entry.project.name),
-                      subtitle: Text(
-                        '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
-                      ),
-                      trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
-                          const SizedBox(height: 4),
-                          Text(
-                            '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                            'Projects Overview',
                             style: TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.green[700],
+                              color: Colors.grey[800],
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-            ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  SizedBox(
+                    height: 220, // Increased height for better card display
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      itemCount: _projects.length,
+                      itemBuilder: (context, index) {
+                        final project = _projects[index];
+                        final metrics = projectMetrics[project.name]!;
+
+                        return Card(
+                          margin: const EdgeInsets.only(right: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          color: Colors.white,
+                          elevation: 4,
+                          child: Container(
+                            width: 220,
+                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      project.name,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.deepPurple[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Hourly Rate: \$${project.hourlyRate.toStringAsFixed(2)}',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                ),
+                                Divider(height: 20, color: Colors.grey[400]),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Hours Logged',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      '${metrics['hours']!.toStringAsFixed(2)} hrs',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.blue[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Earnings',
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      '\$${metrics['earnings']!.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.green[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+
+                SizedBox(height: 24), // Added spacing between sections
+
+                // Active Session Display Section
+                if (_isClockedIn) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Card(
+                      color: Colors.orange[50],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  _isPaused ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                                  color: _isPaused ? Colors.orange : Colors.green,
+                                  size: 30,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Active Session',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.business, color: Colors.grey[700]),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Project:',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  _currentProject!.name,
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.timer, color: Colors.grey[700]),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Elapsed Time:',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  _formatDuration(_elapsed),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.attach_money, color: Colors.grey[700]),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Current Earnings:',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '\$${_currentEarnings.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: _isPaused ? _resumeClock : _pauseClock,
+                                  icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+                                  label: Text(_isPaused ? 'Resume' : 'Pause'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _isPaused ? Colors.green : Colors.orange,
+                                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                ElevatedButton.icon(
+                                  onPressed: _clockOut,
+                                  icon: const Icon(Icons.logout),
+                                  label: const Text('Clock Out'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+
+                SizedBox(height: 24), // Added spacing between sections
+
+                // Recent Time Entries Section
+                if (_timeEntries.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.history, color: Colors.grey[700]),
+                        SizedBox(width: 8),
+                        Text(
+                          'Recent Time Entries',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      children: recentEntries.map((entry) {
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 3,
+                          child: ListTile(
+                            leading: Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
+                            title: Text(
+                              entry.project.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                SizedBox(width: 16),
+                                Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.timer, size: 16, color: Colors.grey[700]),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '${entry.billableHours.toStringAsFixed(2)} hrs',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.attach_money, size: 16, color: Colors.green[700]),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // Implement navigation to entry details or editing
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+
+                SizedBox(height: 24), // Added spacing between sections
+
+                // All Time Entries List
+                if (_timeEntries.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.list_alt, color: Colors.grey[700]),
+                        SizedBox(width: 8),
+                        Text(
+                          'All Time Entries',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ListView.builder(
+                      shrinkWrap: true, // Important to prevent unbounded height
+                      physics: NeverScrollableScrollPhysics(), // Disable inner scroll
+                      itemCount: _timeEntries.length,
+                      itemBuilder: (context, index) {
+                        final entry = _timeEntries[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          elevation: 2,
+                          child: ListTile(
+                            leading: Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
+                            title: Text(
+                              entry.project.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                SizedBox(width: 16),
+                                Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.timer, size: 16, color: Colors.grey[700]),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '${entry.billableHours.toStringAsFixed(2)} hrs',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.attach_money, size: 16, color: Colors.green[700]),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[700],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ]
+              ),
+            ),
           ),
         ),
-      ),
+      
       // **Refined FAB Positioning: Removed Bottom "Total Earnings" and Added Padding Above FAB**
       floatingActionButton: SafeArea( // Ensures FAB respects safe areas
         child: Padding(
@@ -673,37 +879,14 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: _navigateToAddEntry,
             tooltip: 'Add Time Entry',
             child: const Icon(Icons.add),
+            backgroundColor: Colors.deepPurple,
+            foregroundColor: Colors.white,
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Keeps FAB at the end float position
-      // Removed the bottomNavigationBar to prevent overlapping and redundancy
-      // bottomNavigationBar: Container(
-      //   padding: const EdgeInsets.all(16.0),
-      //   color: Colors.grey[200],
-      //   child: Row(
-      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //     children: [
-      //       const Text(
-      //         'Total Earnings:',
-      //         style: TextStyle(
-      //           fontSize: 18,
-      //           fontWeight: FontWeight.bold,
-      //         ),
-      //       ),
-      //       Text(
-      //         '\$${totalEarnings.toStringAsFixed(2)}',
-      //         style: TextStyle(
-      //           fontSize: 18,
-      //           fontWeight: FontWeight.bold,
-      //           color: Colors.green[700],
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
     );
-}
+    }
 
     String _formatDuration(Duration duration) {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
