@@ -53,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )
             : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 80.0), // Ensure space for BottomAppBar
+                padding: const EdgeInsets.only(bottom: 80.0),
                 itemCount: _timeEntries.length,
                 itemBuilder: (context, index) {
                   final entry = _timeEntries[index];
@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Add Time Entry',
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Center docked
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _timeEntries.isNotEmpty
           ? BottomAppBar(
               shape: const CircularNotchedRectangle(),

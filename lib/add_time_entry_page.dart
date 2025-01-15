@@ -17,7 +17,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   TimeOfDay _startTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: 17, minute: 0);
   String _projectName = '';
-  double _hourlyRate = 50.0; // Default hourly rate
+  double _hourlyRate = 50.0;
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -50,7 +50,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       });
   }
 
-  /// Validates that end time is after start time.
   bool _validateTimeOrder() {
     final start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _startTime.hour, _startTime.minute);
     final end = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _endTime.hour, _endTime.minute);
@@ -90,7 +89,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               key: _formKey,
               child: ListView(
                 children: [
-                  // Date Picker
                   ListTile(
                     title: Text(
                         'Date: ${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}'),
@@ -98,21 +96,18 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickDate,
                   ),
                   SizedBox(height: 10),
-                  // Start Time Picker
                   ListTile(
                     title: Text('Start Time: ${_startTime.format(context)}'),
                     trailing: Icon(Icons.access_time),
                     onTap: _pickStartTime,
                   ),
                   SizedBox(height: 10),
-                  // End Time Picker
                   ListTile(
                     title: Text('End Time: ${_endTime.format(context)}'),
                     trailing: Icon(Icons.access_time),
                     onTap: _pickEndTime,
                   ),
                   SizedBox(height: 20),
-                  // Project Name Input
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Project Name',
@@ -129,7 +124,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     },
                   ),
                   SizedBox(height: 20),
-                  // Hourly Rate Input
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Hourly Rate (\$)',
@@ -155,7 +149,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     },
                   ),
                   SizedBox(height: 30),
-                  // Submit Button
                   ElevatedButton(
                     onPressed: _submit,
                     child: Text('Add Entry'),
