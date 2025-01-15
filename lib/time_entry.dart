@@ -6,6 +6,7 @@ class TimeEntry {
   final TimeOfDay endTime;
   final String projectName;
   final double billableHours;
+  final double hourlyRate;
 
   TimeEntry({
     required this.date,
@@ -13,6 +14,7 @@ class TimeEntry {
     required this.endTime,
     required this.projectName,
     required this.billableHours,
+    required this.hourlyRate,
   });
 
   double get totalHours {
@@ -20,4 +22,6 @@ class TimeEntry {
     final end = DateTime(date.year, date.month, date.day, endTime.hour, endTime.minute);
     return end.difference(start).inMinutes / 60.0;
   }
+
+  double get totalEarnings => billableHours * hourlyRate;
 }
