@@ -43,9 +43,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // State variables for Clock In/Out
   bool _isClockedIn = false;
+  bool _isPaused = false; // Tracks if the session is paused
   DateTime? _clockInTime;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
+  Duration _accumulated = Duration.zero; // Accumulates elapsed time before pausing
   double _currentEarnings = 0.0;
   Project? _currentProject;
 
@@ -124,8 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _isClockedIn = true;
+      _isPaused = false;
       _clockInTime = DateTime.now();
       _elapsed = Duration.zero;
+      _accumulated = Duration.zero;
       _currentEarnings = 0.0;
       _currentProject = selectedProject;
     });
@@ -134,8 +138,37 @@ class _MyHomePageState extends State<MyHomePage> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       setState(() {
-        _elapsed = now.difference(_clockInTime!);
+        _elapsed = _accumulated + now.difference(_clockInTime!);
         _currentEarnings = (_elapsed.inSeconds / 3600) * _currentProject!.hourlyRate;
+      });
+    });
+  }
+
+  /// Pauses the active session
+  void _pauseClock() {
+    if (!_isClockedIn || _isPaused) return;
+
+    setState(() {
+      _isPaused = true;
+      _accumulated += DateTime.now().difference(_clockInTime!);
+      _timer?.cancel(); // Stop the timer
+    });
+  }
+
+  /// Resumes the paused session
+  void _resumeClock() {
+    if (!_isClockedIn || !_isPaused) return;
+
+    setState(() {
+      _isPaused = false;
+      _clockInTime = DateTime.now();
+      // Restart the timer
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        final now = DateTime.now();
+        setState(() {
+          _elapsed = _accumulated + now.difference(_clockInTime!);
+          _currentEarnings = (_elapsed.inSeconds / 3600) * _currentProject!.hourlyRate;
+        });
       });
     });
   }
@@ -148,8 +181,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _isClockedIn = false;
+      _isPaused = false;
       _timer?.cancel();
     });
+
+    // Calculate total elapsed time
+    Duration totalElapsed = _accumulated;
+    if (!_isPaused && _clockInTime != null) {
+      totalElapsed += clockOutTime.difference(_clockInTime!);
+    }
 
     // Create a new TimeEntry
     final newEntry = TimeEntry(
@@ -162,11 +202,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _timeEntries.add(newEntry);
-    });
-
-    // Reset current tracking variables
-    setState(() {
       _elapsed = Duration.zero;
+      _accumulated = Duration.zero;
       _currentEarnings = 0.0;
       _clockInTime = null;
       _currentProject = null;
@@ -424,62 +461,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
 
-              // Recent Time Entries Section
-              if (_timeEntries.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Recent Time Entries',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ),
-                ),
-              if (_timeEntries.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: recentEntries.map((entry) {
-                      return Card(
-  margin: const EdgeInsets.symmetric(vertical: 8.0),
-  elevation: 3,
-  child: ListTile(
-    leading: const Icon(Icons.work),
-    title: Text(entry.project.name),
-    subtitle: Text(
-      '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
-    ),
-    trailing: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
-        SizedBox(height: 4),
-        Text(
-          '\$${entry.totalEarnings.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.green[700],
-          ),
-        ),
-      ],
-    ),
-    onTap: () {
-      // Implement navigation to entry details or editing
-    },
-  ),
-);
-
-                    }).toList(),
-                  ),
-                ),
-
-              // Active Session Display (if any)
+              // **Active Session Display Section (Moved Above Recent Time Entries)**
               if (_isClockedIn)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -490,13 +472,24 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Active Session',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Active Session',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Icon(
+                                _isPaused ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                                color: _isPaused ? Colors.orange : Colors.green,
+                                size: 30,
+                              ),
+                            ],
                           ),
                           SizedBox(height: 10),
                           Text(
@@ -538,18 +531,86 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10),
-                          ElevatedButton.icon(
-                            onPressed: _clockOut,
-                            icon: const Icon(Icons.logout),
-                            label: const Text('Clock Out'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red, // Corrected from foregroundColor
-                            ),
+                          SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _isPaused ? _resumeClock : _pauseClock,
+                                icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+                                label: Text(_isPaused ? 'Resume' : 'Pause'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _isPaused ? Colors.green : Colors.orange,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              ElevatedButton.icon(
+                                onPressed: _clockOut,
+                                icon: const Icon(Icons.logout),
+                                label: const Text('Clock Out'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red, // Corrected from foregroundColor
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
+                  ),
+                ),
+
+              // Recent Time Entries Section
+              if (_timeEntries.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Recent Time Entries',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                  ),
+                ),
+              if (_timeEntries.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    children: recentEntries.map((entry) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        elevation: 3,
+                        child: ListTile(
+                          leading: const Icon(Icons.work),
+                          title: Text(entry.project.name),
+                          subtitle: Text(
+                            '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
+                              SizedBox(height: 4),
+                              Text(
+                                '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () {
+                            // Implement navigation to entry details or editing
+                          },
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
 
@@ -633,9 +694,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      ));
+    }
+
+
 
     String _formatDuration(Duration duration) {
       String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -646,5 +708,5 @@ class _MyHomePageState extends State<MyHomePage> {
 
     String _twoDigits(int n) {
       return n.toString().padLeft(2, '0');
-}
+    }
 }
