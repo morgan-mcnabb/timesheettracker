@@ -17,7 +17,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   TimeOfDay _startTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: 17, minute: 0);
   String _projectName = '';
-  double _billableHours = 8.0;
   double _hourlyRate = 50.0; // Default hourly rate
 
   Future<void> _pickDate() async {
@@ -51,14 +50,27 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       });
   }
 
+  /// Validates that end time is after start time.
+  bool _validateTimeOrder() {
+    final start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _startTime.hour, _startTime.minute);
+    final end = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _endTime.hour, _endTime.minute);
+    return end.isAfter(start);
+  }
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      if (!_validateTimeOrder()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('End Time must be after Start Time')),
+        );
+        return;
+      }
+
       final newEntry = TimeEntry(
         date: _selectedDate,
         startTime: _startTime,
         endTime: _endTime,
         projectName: _projectName,
-        billableHours: _billableHours,
         hourlyRate: _hourlyRate,
       );
       widget.onAdd(newEntry);
@@ -112,28 +124,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a project name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  // Billable Hours Input
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Billable Hours',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (value) {
-                      _billableHours = double.tryParse(value) ?? 0.0;
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter billable hours';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
                       }
                       return null;
                     },

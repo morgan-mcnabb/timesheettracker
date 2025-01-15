@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
 import 'add_time_entry_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -35,77 +36,51 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    double totalEarnings = _timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
+    double totalEarnings =
+        _timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _timeEntries.isEmpty
-                ? Center(
-                    child: Text(
-                      'No time entries yet.',
-                      style: Theme.of(context).textTheme.headlineLarge,
+      body: SafeArea(
+        child: _timeEntries.isEmpty
+            ? Center(
+                child: Text(
+                  'No time entries yet.',
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.only(bottom: 80.0), // Ensure space for BottomAppBar
+                itemCount: _timeEntries.length,
+                itemBuilder: (context, index) {
+                  final entry = _timeEntries[index];
+                  return ListTile(
+                    leading: const Icon(Icons.work),
+                    title: Text(entry.projectName),
+                    subtitle: Text(
+                      '${_formatDate(entry.date)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: _timeEntries.length,
-                    itemBuilder: (context, index) {
-                      final entry = _timeEntries[index];
-                      return ListTile(
-                        leading: Icon(Icons.work),
-                        title: Text(entry.projectName),
-                        subtitle: Text(
-                          '${_formatDate(entry.date)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
+                    trailing: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
+                        const SizedBox(height: 4),
+                        Text(
+                          '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[700],
+                          ),
                         ),
-                        trailing: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('${entry.billableHours} hrs'),
-                            Text(
-                              '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          if (_timeEntries.isNotEmpty)
-            Container(
-              padding: EdgeInsets.all(16.0),
-              color: Colors.grey[200],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total Earnings:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      ],
                     ),
-                  ),
-                  Text(
-                    '\$${totalEarnings.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[700],
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -125,6 +100,36 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Add Time Entry',
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Center docked
+      bottomNavigationBar: _timeEntries.isNotEmpty
+          ? BottomAppBar(
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 6.0,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total Earnings:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '\$${totalEarnings.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
     );
   }
 
