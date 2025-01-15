@@ -1,5 +1,3 @@
-// lib/add_time_entry_page.dart
-
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
 import 'project.dart';
@@ -33,17 +31,16 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
       builder: (BuildContext context, Widget? child) {
-        // Applying consistent theme
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: Colors.deepPurple, // header background color
-              onPrimary: Colors.white, // header text color
-              onSurface: Colors.black, // body text color
+              primary: Colors.deepPurple, 
+              onPrimary: Colors.white, 
+              onSurface: Colors.black,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple, // button text color
+                backgroundColor: Colors.deepPurple, 
               ),
             ),
           ),
@@ -63,17 +60,16 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
           context: context,
           initialTime: _startTime,
           builder: (BuildContext context, Widget? child) {
-            // Applying consistent theme
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: Colors.deepPurple, // clock dial color
-                  onPrimary: Colors.white, // clock text color
-                  onSurface: Colors.black, // clock dial text color
+                  primary: Colors.deepPurple, 
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black, 
                 ),
                 textButtonTheme: TextButtonThemeData(
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.deepPurple, // button text color
+                    backgroundColor: Colors.deepPurple,
                   ),
                 ),
               ),
@@ -97,13 +93,13 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
             return Theme(
               data: Theme.of(context).copyWith(
                 colorScheme: ColorScheme.light(
-                  primary: Colors.deepPurple, // clock dial color
-                  onPrimary: Colors.white, // clock text color
-                  onSurface: Colors.black, // clock dial text color
+                  primary: Colors.deepPurple, 
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black,
                 ),
                 textButtonTheme: TextButtonThemeData(
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.deepPurple, // button text color
+                    backgroundColor: Colors.deepPurple,
                   ),
                 ),
               ),
@@ -162,12 +158,11 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
           backgroundColor: Colors.deepPurple,
         ),
         body: Padding(
-          padding: const EdgeInsets.all(24.0), // Increased padding for better spacing
+          padding: const EdgeInsets.all(24.0), 
           child: Form(
               key: _formKey,
               child: ListView(
                 children: [
-                  // Date Picker
                   ListTile(
                     leading: Icon(Icons.calendar_today, color: Colors.deepPurple),
                     title: Text(
@@ -176,7 +171,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickDate,
                   ),
                   SizedBox(height: 16),
-                  // Start Time Picker
                   ListTile(
                     leading: Icon(Icons.access_time, color: Colors.deepPurple),
                     title: Text('Start Time: ${_startTime.format(context)}'),
@@ -184,7 +178,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickStartTime,
                   ),
                   SizedBox(height: 16),
-                  // End Time Picker
                   ListTile(
                     leading: Icon(Icons.access_time, color: Colors.deepPurple),
                     title: Text('End Time: ${_endTime.format(context)}'),
@@ -192,7 +185,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickEndTime,
                   ),
                   SizedBox(height: 24),
-                  // Project Dropdown
                   DropdownButtonFormField<Project>(
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.work_outline, color: Colors.deepPurple),
@@ -222,7 +214,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     },
                   ),
                   SizedBox(height: 32),
-                  // Submit Button
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(

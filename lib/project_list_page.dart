@@ -1,5 +1,3 @@
-// lib/project_list_page.dart
-
 import 'package:flutter/material.dart';
 import 'project.dart';
 
@@ -35,7 +33,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Project Name Field
                 TextFormField(
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.work_outline, color: Colors.deepPurple),
@@ -53,7 +50,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
                   },
                 ),
                 SizedBox(height: 16),
-                // Hourly Rate Field
                 TextFormField(
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.attach_money, color: Colors.deepPurple),

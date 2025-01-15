@@ -1,12 +1,9 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
 import 'add_time_entry_page.dart';
 import 'project.dart';
 import 'project_list_page.dart';
-import 'dart:async'; // Import for Timer
-
+import 'dart:async'; 
 void main() {
   runApp(const MyApp());
 }
@@ -18,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Timesheet Tracker',
-      debugShowCheckedModeBanner: false, // Remove debug banner
+      debugShowCheckedModeBanner: false, 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -45,19 +42,17 @@ class _MyHomePageState extends State<MyHomePage> {
   List<TimeEntry> _timeEntries = [];
   List<Project> _projects = [];
 
-  // State variables for Clock In/Out
   bool _isClockedIn = false;
-  bool _isPaused = false; // Tracks if the session is paused
+  bool _isPaused = false;
   DateTime? _clockInTime;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
-  Duration _accumulated = Duration.zero; // Accumulates elapsed time before pausing
+  Duration _accumulated = Duration.zero;
   double _currentEarnings = 0.0;
   Project? _currentProject;
 
-  /// Starts the clocking in process with project selection
   void _clockIn() async {
-    if (_isClockedIn) return; // Prevent multiple clock-ins
+    if (_isClockedIn) return; 
 
     if (_projects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    // Prompt user to select a project
     Project? selectedProject = await showDialog<Project>(
       context: context,
       builder: (BuildContext context) {
@@ -110,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cancel
+                Navigator.of(context).pop(); 
               },
               child: const Text('Cancel'),
             ),
@@ -127,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
 
-    if (selectedProject == null) return; // User canceled
+    if (selectedProject == null) return; 
 
     setState(() {
       _isClockedIn = true;
@@ -139,7 +133,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _currentProject = selectedProject;
     });
 
-    // Start a timer that updates every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       setState(() {
@@ -149,25 +142,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  /// Pauses the active session
   void _pauseClock() {
     if (!_isClockedIn || _isPaused) return;
 
     setState(() {
       _isPaused = true;
       _accumulated += DateTime.now().difference(_clockInTime!);
-      _timer?.cancel(); // Stop the timer
+      _timer?.cancel(); 
     });
   }
 
-  /// Resumes the paused session
   void _resumeClock() {
     if (!_isClockedIn || !_isPaused) return;
 
     setState(() {
       _isPaused = false;
       _clockInTime = DateTime.now();
-      // Restart the timer
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         final now = DateTime.now();
         setState(() {
@@ -178,9 +168,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  /// Stops the clocking out process
   void _clockOut() {
-    if (!_isClockedIn) return; // Prevent clock-out if not clocked in
+    if (!_isClockedIn) return; 
 
     final clockOutTime = DateTime.now();
 
@@ -190,13 +179,11 @@ class _MyHomePageState extends State<MyHomePage> {
       _timer?.cancel();
     });
 
-    // Calculate total elapsed time
     Duration totalElapsed = _accumulated;
     if (!_isPaused && _clockInTime != null) {
       totalElapsed += clockOutTime.difference(_clockInTime!);
     }
 
-    // Create a new TimeEntry
     final newEntry = TimeEntry(
       date: DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
@@ -215,7 +202,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  /// Navigates to the Add Time Entry Page
   void _navigateToAddEntry() {
     Navigator.push(
       context,
@@ -226,13 +212,12 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          projects: _projects, // Passing the list of projects
+          projects: _projects, 
         ),
       ),
     );
   }
 
-  /// Navigates to the Project Management Page
   void _navigateToManageProjects() {
     Navigator.push(
       context,
@@ -256,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel timer if active
+    _timer?.cancel(); 
     super.dispose();
   }
 
@@ -265,11 +250,9 @@ class _MyHomePageState extends State<MyHomePage> {
     double totalEarnings =
         _timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
 
-    // Calculate Total Hours Logged
     double totalHoursLogged =
         _timeEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
 
-    // Calculate Project-Specific Metrics
     Map<String, Map<String, double>> projectMetrics = {};
     for (var project in _projects) {
       projectMetrics[project.name] = {
@@ -286,16 +269,12 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    // Determine Recent Time Entries (last 5)
     List<TimeEntry> recentEntries = List.from(_timeEntries);
-    // Sort the list by date descending
     recentEntries.sort((a, b) {
-      // Combine date and startTime to get the actual start DateTime
       DateTime aStart = DateTime(a.date.year, a.date.month, a.date.day, a.startTime.hour, a.startTime.minute);
       DateTime bStart = DateTime(b.date.year, b.date.month, b.date.day, b.startTime.hour, b.startTime.minute);
       return bStart.compareTo(aStart);
     });
-    // Take the first 5 entries
     recentEntries = recentEntries.take(5).toList();
 
     return Scaffold(
@@ -323,17 +302,15 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView( // Made the entire body scrollable
+        child: SingleChildScrollView( 
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Column(
               children: [
-                // Summary Metrics Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     children: [
-                      // Total Hours Logged Card
                       Expanded(
                         child: Card(
                           color: Colors.blue[50],
@@ -342,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           elevation: 4,
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
                                 Icon(Icons.access_time, color: Colors.blue[700], size: 40),
@@ -373,7 +350,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      // Total Earnings Card
                       Expanded(
                         child: Card(
                           color: Colors.green[50],
@@ -382,7 +358,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           elevation: 4,
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            padding: const EdgeInsets.all(16.0),
                             child: Row(
                               children: [
                                 Icon(Icons.attach_money, color: Colors.green[700], size: 40),
@@ -417,9 +393,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
 
-                SizedBox(height: 24), // Added spacing between sections
+                SizedBox(height: 24), 
 
-                // Projects Overview Section
                 if (_projects.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -443,7 +418,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   SizedBox(height: 16),
                   SizedBox(
-                    height: 220, // Increased height for better card display
+                    height: 220, 
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -461,7 +436,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           elevation: 4,
                           child: Container(
                             width: 220,
-                            padding: const EdgeInsets.all(16.0), // Increased padding for better spacing
+                            padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -529,9 +504,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
 
-                SizedBox(height: 24), // Added spacing between sections
+                SizedBox(height: 24),
 
-                // Active Session Display Section
                 if (_isClockedIn) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -663,9 +637,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
 
-                SizedBox(height: 24), // Added spacing between sections
+                SizedBox(height: 24), 
 
-                // Recent Time Entries Section
                 if (_timeEntries.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -755,7 +728,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               ],
                             ),
                             onTap: () {
-                              // Implement navigation to entry details or editing
                             },
                           ),
                         );
@@ -764,9 +736,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
 
-                SizedBox(height: 24), // Added spacing between sections
+                SizedBox(height: 24),
 
-                // All Time Entries List
                 if (_timeEntries.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -789,8 +760,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: ListView.builder(
-                      shrinkWrap: true, // Important to prevent unbounded height
-                      physics: NeverScrollableScrollPhysics(), // Disable inner scroll
+                      shrinkWrap: true, 
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: _timeEntries.length,
                       itemBuilder: (context, index) {
                         final entry = _timeEntries[index];
@@ -871,10 +842,9 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       
-      // **Refined FAB Positioning: Removed Bottom "Total Earnings" and Added Padding Above FAB**
-      floatingActionButton: SafeArea( // Ensures FAB respects safe areas
+      floatingActionButton: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 16.0), // Adds padding above FAB
+          padding: const EdgeInsets.only(bottom: 16.0),
           child: FloatingActionButton(
             onPressed: _navigateToAddEntry,
             tooltip: 'Add Time Entry',
