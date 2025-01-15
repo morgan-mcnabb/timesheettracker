@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'time_entry.dart';
+import 'project.dart';
 
 class AddTimeEntryPage extends StatefulWidget {
   final Function(TimeEntry) onAdd;
+  final List<Project> projects;
 
-  const AddTimeEntryPage({Key? key, required this.onAdd}) : super(key: key);
+  const AddTimeEntryPage({
+    Key? key,
+    required this.onAdd,
+    required this.projects,
+  }) : super(key: key);
 
   @override
   _AddTimeEntryPageState createState() => _AddTimeEntryPageState();
@@ -16,8 +22,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _startTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: 17, minute: 0);
-  String _projectName = '';
-  double _hourlyRate = 50.0;
+  Project? _selectedProject;
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -51,8 +56,18 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   }
 
   bool _validateTimeOrder() {
-    final start = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _startTime.hour, _startTime.minute);
-    final end = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _endTime.hour, _endTime.minute);
+    final start = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _startTime.hour,
+        _startTime.minute);
+    final end = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _endTime.hour,
+        _endTime.minute);
     return end.isAfter(start);
   }
 
@@ -69,8 +84,8 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         date: _selectedDate,
         startTime: _startTime,
         endTime: _endTime,
-        projectName: _projectName,
-        hourlyRate: _hourlyRate,
+        project: _selectedProject!,
+        hourlyRate: _selectedProject!.hourlyRate,
       );
       widget.onAdd(newEntry);
       Navigator.pop(context);
@@ -108,42 +123,27 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickEndTime,
                   ),
                   SizedBox(height: 20),
-                  TextFormField(
+                  DropdownButtonFormField<Project>(
                     decoration: InputDecoration(
-                      labelText: 'Project Name',
+                      labelText: 'Select Project',
                       border: OutlineInputBorder(),
                     ),
-                    onChanged: (value) {
-                      _projectName = value;
+                    items: widget.projects
+                        .map(
+                          (project) => DropdownMenuItem<Project>(
+                            value: project,
+                            child: Text(project.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (Project? newValue) {
+                      setState(() {
+                        _selectedProject = newValue;
+                      });
                     },
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a project name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Hourly Rate (\$)',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
-                    initialValue: _hourlyRate.toString(),
-                    onChanged: (value) {
-                      _hourlyRate = double.tryParse(value) ?? 0.0;
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an hourly rate';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
-                      }
-                      if (double.tryParse(value)! < 0) {
-                        return 'Hourly rate cannot be negative';
+                      if (value == null) {
+                        return 'Please select a project';
                       }
                       return null;
                     },

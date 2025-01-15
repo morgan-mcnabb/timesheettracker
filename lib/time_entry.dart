@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'project.dart';
 
 class TimeEntry {
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final String projectName;
+  final Project project;
   final double hourlyRate;
 
   TimeEntry({
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.projectName,
+    required this.project,
     required this.hourlyRate,
   });
 
