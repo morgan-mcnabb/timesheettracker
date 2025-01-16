@@ -120,7 +120,6 @@ class RecentEntriesTab extends StatelessWidget {
     );
   }
 
-  // Function to format two digits
   static String _twoDigits(int n) {
     return n.toString().padLeft(2, '0');
   }
