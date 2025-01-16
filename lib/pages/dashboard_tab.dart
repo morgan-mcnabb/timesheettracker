@@ -14,25 +14,23 @@ class DashboardTab extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Dashboard'),
-          backgroundColor: Colors.teal,
-          automaticallyImplyLeading: false,
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
-            labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            tabs: [
-              Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
-              Tab(text: 'Recent', icon: Icon(Icons.history)),
-            ],
-          ),
-        ),
         body: Column(
-          children: const [
+          children: [
+            const Material(
+              color: Colors.white,
+              child: TabBar(
+                labelColor: Colors.deepPurple,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.deepPurple,
+                labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                tabs: [
+                  Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
+                  Tab(text: 'Recent', icon: Icon(Icons.history)),
+                ],
+              ),
+            ),
             ClockSection(),
-            Expanded(
+            const Expanded(
               child: TabBarView(
                 children: [
                   SummaryTab(),
@@ -94,11 +92,11 @@ class ClockSection extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -136,11 +134,11 @@ class ClockSection extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isPaused ? Colors.green : Colors.teal,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -153,11 +151,11 @@ class ClockSection extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
