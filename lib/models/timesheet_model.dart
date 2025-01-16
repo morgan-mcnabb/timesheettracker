@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import '../project.dart';
 import '../time_entry.dart';
 

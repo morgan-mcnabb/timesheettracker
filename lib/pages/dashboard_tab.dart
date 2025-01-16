@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'summary_tab.dart';
-import 'projects_overview_tab.dart';
 import 'recent_entries_tab.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
@@ -13,7 +12,7 @@ class DashboardTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Dashboard'),
@@ -22,7 +21,6 @@ class DashboardTab extends StatelessWidget {
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
-              Tab(text: 'Projects', icon: Icon(Icons.business_center)),
               Tab(text: 'Recent', icon: Icon(Icons.history)),
             ],
           ),
@@ -34,7 +32,6 @@ class DashboardTab extends StatelessWidget {
               child: TabBarView(
                 children: [
                   SummaryTab(),
-                  ProjectsOverviewTab(),
                   RecentEntriesTab(),
                 ],
               ),
