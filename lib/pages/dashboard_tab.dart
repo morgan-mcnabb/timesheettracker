@@ -16,9 +16,13 @@ class DashboardTab extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Dashboard'),
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: Colors.teal,
           automaticallyImplyLeading: false,
           bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+            labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             tabs: [
               Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
               Tab(text: 'Recent', icon: Icon(Icons.history)),
@@ -59,40 +63,42 @@ class ClockSection extends StatelessWidget {
         '${elapsed.inHours.toString().padLeft(2, '0')}:${(elapsed.inMinutes % 60).toString().padLeft(2, '0')}:${(elapsed.inSeconds % 60).toString().padLeft(2, '0')}';
 
     return Card(
-      color: Colors.orange[50],
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
-      elevation: 4,
-      margin: const EdgeInsets.all(standardPadding),
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(horizontal: standardPadding, vertical: 8.0),
       child: Padding(
-        padding: const EdgeInsets.all(standardPadding),
+        padding: const EdgeInsets.all(standardPadding / 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Time Tracking',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepOrange,
+                color: Colors.teal[800],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             if (!isClockedIn)
-              ElevatedButton.icon(
-                onPressed: () {
-                  _showClockInDialog(context, timesheet);
-                },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Clock In'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 12.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _showClockInDialog(context, timesheet);
+                  },
+                  icon: const Icon(Icons.play_arrow, size: 20),
+                  label: const Text('Clock In'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -104,18 +110,17 @@ class ClockSection extends StatelessWidget {
                     'Project: ${currentProject?.name ?? 'N/A'}',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     'Elapsed Time: $elapsedTime',
                     style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     'Current Earnings: \$${currentEarnings.toStringAsFixed(2)}',
-                    style:
-                        const TextStyle(fontSize: 16, color: Colors.green),
+                    style: const TextStyle(fontSize: 16, color: Colors.green),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       ElevatedButton.icon(
@@ -126,26 +131,33 @@ class ClockSection extends StatelessWidget {
                             timesheet.pauseClock();
                           }
                         },
-                        icon: Icon(
-                            isPaused ? Icons.play_arrow : Icons.pause),
+                        icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 20),
                         label: Text(isPaused ? 'Resume' : 'Pause'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPaused
-                              ? Colors.green
-                              : Colors.deepOrange,
+                          backgroundColor: isPaused ? Colors.green : Colors.teal,
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       ElevatedButton.icon(
                         onPressed: () {
                           timesheet.clockOut();
                         },
-                        icon: const Icon(Icons.stop),
+                        icon: const Icon(Icons.stop, size: 20),
                         label: const Text('Clock Out'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -179,12 +191,11 @@ class ClockSection extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const ProjectListPage()),
+                  MaterialPageRoute(builder: (context) => const ProjectListPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Add Project'),
@@ -242,14 +253,13 @@ class ClockSection extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (_dialogFormKey.currentState!.validate()) {
-                  final project = projects
-                      .firstWhere((proj) => proj.name == selectedProject);
+                  final project = projects.firstWhere((proj) => proj.name == selectedProject);
                   timesheet.clockIn(project);
                   Navigator.of(context).pop();
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Clock In'),
