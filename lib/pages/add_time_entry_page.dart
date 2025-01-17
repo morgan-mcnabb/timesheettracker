@@ -149,6 +149,8 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -161,7 +163,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
           child: ListView(
             children: [
               ListTile(
-                leading: const Icon(Icons.calendar_today, color: Colors.deepPurple),
+                leading: Icon(Icons.calendar_today, color: colorScheme.primary),
                 title: Text(
                     'Date: ${_selectedDate.year}-${twoDigits(_selectedDate.month)}-${twoDigits(_selectedDate.day)}'),
                 trailing: const Icon(
@@ -173,7 +175,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: const Icon(Icons.access_time, color: Colors.deepPurple),
+                leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('Start Time: ${_startTime.format(context)}'),
                 trailing: const Icon(
                   Icons.arrow_forward_ios,
@@ -184,7 +186,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: const Icon(Icons.access_time, color: Colors.deepPurple),
+                leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('End Time: ${_endTime.format(context)}'),
                 trailing: const Icon(
                   Icons.arrow_forward_ios,
@@ -197,7 +199,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               DropdownButtonFormField<Project>(
                 decoration: InputDecoration(
                   prefixIcon:
-                      Icon(Icons.work_outline, color: Theme.of(context).colorScheme.primary,
+                      Icon(Icons.work_outline, color: colorScheme.primary,
                   ),
                   labelText: 'Select Project',
                   border: OutlineInputBorder(

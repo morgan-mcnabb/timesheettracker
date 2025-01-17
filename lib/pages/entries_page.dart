@@ -20,10 +20,10 @@ class EntriesPage extends StatelessWidget {
         title: const Text('All Time Entries'),
       ),
       body: timeEntries.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No time entries yet.',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+                style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             )
           : ListView.builder(

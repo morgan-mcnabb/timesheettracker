@@ -12,6 +12,7 @@ class RecentEntriesTab extends StatelessWidget {
     final timesheet = Provider.of<TimesheetModel>(context);
     List<TimeEntry> recentEntries = List.from(timesheet.timeEntries);
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     recentEntries.sort((a, b) {
       DateTime aStart = DateTime(a.date.year, a.date.month, a.date.day,
@@ -49,15 +50,12 @@ class RecentEntriesTab extends StatelessWidget {
             child: ListTile(
               leading: Icon(
                 Icons.work,
-                color: Colors.deepPurple[700],
+                color: colorScheme.primary,
                 size: 30,
               ),
               title: Text(
                 entry.project.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               subtitle: Row(
                 children: [
@@ -66,7 +64,7 @@ class RecentEntriesTab extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
-                    style: const TextStyle(fontSize: 14),
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 16),
                   Icon(Icons.access_time,
@@ -74,7 +72,7 @@ class RecentEntriesTab extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
-                    style: const TextStyle(fontSize: 14),
+                    style: textTheme.bodySmall,
                   ),
                 ],
               ),
@@ -90,7 +88,7 @@ class RecentEntriesTab extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '${entry.billableHours.toStringAsFixed(2)} hrs',
-                        style: const TextStyle(fontSize: 14),
+                        style: textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -103,10 +101,9 @@ class RecentEntriesTab extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.secondary,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green,
                         ),
                       ),
                     ],

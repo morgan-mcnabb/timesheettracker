@@ -11,26 +11,29 @@ class DashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DefaultTabController(
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return DefaultTabController(
       length: 2,
       child: Scaffold(
         body: Column(
           children: [
             Material(
-              color: Colors.white,
+              color: colorScheme.surface,
               child: TabBar(
-                labelColor: Colors.deepPurple,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.deepPurple,
-                labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                tabs: [
+                labelColor: colorScheme.primary,
+                unselectedLabelColor: colorScheme.onSurfaceVariant,
+                indicatorColor: colorScheme.primary,
+                labelStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                tabs: const [
                   Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
                   Tab(text: 'Recent', icon: Icon(Icons.history)),
                 ],
               ),
             ),
-            ClockSection(),
-            Expanded(
+            const ClockSection(),
+            const Expanded(
               child: TabBarView(
                 children: [
                   SummaryTab(),
@@ -63,7 +66,7 @@ class ClockSection extends StatelessWidget {
         '${elapsed.inHours.toString().padLeft(2, '0')}:${(elapsed.inMinutes % 60).toString().padLeft(2, '0')}:${(elapsed.inSeconds % 60).toString().padLeft(2, '0')}';
 
     return Card(
-      color: Colors.white,
+      color: colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
@@ -131,7 +134,7 @@ class ClockSection extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -148,7 +151,7 @@ class ClockSection extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -163,6 +166,7 @@ class ClockSection extends StatelessWidget {
 
   void _showClockInDialog(BuildContext context, TimesheetModel timesheet) {
     final projects = timesheet.projects;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (projects.isEmpty) {
       showDialog(
@@ -186,8 +190,8 @@ class ClockSection extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
               child: const Text('Add Project'),
             ),
@@ -197,7 +201,7 @@ class ClockSection extends StatelessWidget {
       return;
     }
 
-    String selectedProject = projects[0].name ?? "";
+    String selectedProject = projects[0].name;
     final dialogFormKey = GlobalKey<FormState>();
 
     showDialog(
@@ -250,8 +254,8 @@ class ClockSection extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
               child: const Text('Clock In'),
             ),

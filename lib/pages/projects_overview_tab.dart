@@ -11,6 +11,8 @@ class ProjectsOverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     Map<String, Map<String, double>> projectMetrics = {};
     for (var project in projects) {

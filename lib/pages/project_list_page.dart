@@ -14,12 +14,10 @@ class ProjectListPage extends StatelessWidget {
     final List<Project> projects = timesheet.projects;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
       ),
       body: projects.isEmpty
           ? Center(
@@ -113,6 +111,7 @@ class ProjectListPage extends StatelessWidget {
     String projectName = '';
     String hourlyRateStr = '';
     final dialogFormKey = GlobalKey<FormState>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     showDialog(
       context: context,
@@ -125,11 +124,11 @@ class ProjectListPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon:
-                        Icon(Icons.work_outline, color: Colors.deepPurple),
+                        Icon(Icons.work_outline, color: colorScheme.primary),
                     labelText: 'Project Name',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   onChanged: (value) {
                     projectName = value;
@@ -143,11 +142,11 @@ class ProjectListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon:
-                        Icon(Icons.attach_money, color: Colors.deepPurple),
+                        Icon(Icons.attach_money, color: colorScheme.primary),
                     labelText: 'Hourly Rate (\$)',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
