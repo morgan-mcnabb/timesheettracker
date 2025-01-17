@@ -1,10 +1,10 @@
 import 'xata_metadata.dart';
 
 class Project {
-  final String? id;
-  final String? name;
-  final double? hourlyRate;
-  final XataMetadata? xata;
+  final String id;
+  final String name;
+  final double hourlyRate;
+  final XataMetadata  xata;
 
   Project({
     required this.id,
@@ -28,7 +28,7 @@ class Project {
     return {
       'name': name,
       'hourly_rate': hourlyRate,
-      if (id != null) 'id': id,
+      'id': id,
     };
   }
 }

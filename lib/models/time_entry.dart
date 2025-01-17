@@ -6,8 +6,8 @@ class TimeEntry {
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final Project? project;
-  final String? projectName;
+  final Project project;
+  final String projectName;
   final double? rate;
 
   TimeEntry({
@@ -36,7 +36,7 @@ class TimeEntry {
         minute: endDateTime.minute,
       ),
       project:
-          json['project'] != null ? Project.fromJson(json['project']) : null,
+          Project.fromJson(json['project']),
       projectName: json['project']?['name'],
       rate: json['rate']?.toDouble() ?? 0.0,
     );
