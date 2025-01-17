@@ -62,7 +62,7 @@ class TimesheetModel extends ChangeNotifier {
       final now = DateTime.now();
       _elapsed = _accumulated + now.difference(_clockInTime!);
       _currentEarnings =
-          (_elapsed.inSeconds / 3600) * (_currentProject?.hourlyRate ?? 0.0);
+          (_elapsed.inSeconds / 3600) * (_currentProject!.hourlyRate);
       notifyListeners();
     });
   }
@@ -77,16 +77,21 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   void resumeClock() {
-    if (!_isClockedIn || !_isPaused) return;
+    if (!_isClockedIn || !_isPaused || _currentProject == null) return;
 
     _isPaused = false;
     _clockInTime = DateTime.now();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_clockInTime == null || _currentProject == null) {
+        timer.cancel();
+        return;
+      }
+
       final now = DateTime.now();
       _elapsed = _accumulated + now.difference(_clockInTime!);
       _currentEarnings =
-          (_elapsed.inSeconds / 3600) * (_currentProject?.hourlyRate ?? 0.0);
+          (_elapsed.inSeconds / 3600) * (_currentProject!.hourlyRate);
       notifyListeners();
     });
   }
@@ -107,9 +112,12 @@ class TimesheetModel extends ChangeNotifier {
 
     final newEntry = TimeEntry(
       id: "",
-      date: DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
-      startTime: TimeOfDay.fromDateTime(_clockInTime!),
-      endTime: TimeOfDay.fromDateTime(clockOutTime),
+      date: DateTime(
+        _clockInTime!.year, 
+        _clockInTime!.month,
+         _clockInTime!.day),
+      startTime: _clockInTime!,
+      endTime: clockOutTime,
       project: _currentProject!,
       rate: _currentProject!.hourlyRate,
       projectName: _currentProject!.name,
@@ -123,6 +131,43 @@ class TimesheetModel extends ChangeNotifier {
     _clockInTime = null;
     _currentProject = null;
 
+    notifyListeners();
+  }
+
+  void addManualTimeEntry(DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) {
+    final preciseStart = DateTime (
+      date.year,
+      date.month,
+      date.day,
+      startTime.hour,
+      startTime.minute,
+      0, // manual entries have to be 0 because TimePicker sucks
+    );
+    final preciseEnd = DateTime (
+      date.year,
+      date.month,
+      date.day,
+      endTime.hour,
+      endTime.minute,
+      0, // time picker sucks
+    );
+
+
+    final newEntry = TimeEntry (
+      id: "",
+      date: DateTime(
+        preciseStart.year,
+        preciseStart.month,
+        preciseStart.day,
+      ),
+      startTime: preciseStart,
+      endTime: preciseEnd,
+      project: project,
+      rate: project.hourlyRate,
+      projectName: project.name
+    );
+    
+    _timeEntries.add(newEntry);
     notifyListeners();
   }
 

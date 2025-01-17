@@ -132,17 +132,12 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       }
 
       final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-
-      final newEntry = TimeEntry(
-        id: "",
-        date: _selectedDate,
-        startTime: _startTime,
-        endTime: _endTime,
-        project: _selectedProject!,
-        rate: _selectedProject!.hourlyRate,
-        projectName: _selectedProject!.name
-      );
-      timesheet.addTimeEntry(newEntry);
+      timesheet.addManualTimeEntry(
+        _selectedDate,
+        _startTime,
+        _endTime,
+        _selectedProject!,
+        );
       Navigator.pop(context);
     }
   }

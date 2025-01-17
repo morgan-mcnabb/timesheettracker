@@ -4,8 +4,8 @@ import 'package:timesheettracker/models/project.dart';
 class TimeEntry {
   final String? id;
   final DateTime date;
-  final TimeOfDay startTime;
-  final TimeOfDay endTime;
+  final DateTime startTime;
+  final DateTime endTime;
   final Project project;
   final String projectName;
   final double? rate;
@@ -39,18 +39,16 @@ class TimeEntry {
 
     return TimeEntry(
       id: json['id'],
-      date: startDateTime,
-      startTime: TimeOfDay(
-        hour: startDateTime.hour,
-        minute: startDateTime.minute,
+      date: DateTime (
+        startDateTime.year,
+        startDateTime.month,
+        startDateTime.day,
       ),
-      endTime: TimeOfDay(
-        hour: endDateTime.hour,
-        minute: endDateTime.minute,
-      ),
+      startTime: startDateTime,
+      endTime: endDateTime,
       project:
           Project.fromJson(json['project']),
-      projectName: json['project']?['name'],
+      projectName: json['project']['name'],
       rate: json['rate']?.toDouble() ?? 0.0,
     );
   }
@@ -82,11 +80,7 @@ class TimeEntry {
   }
 
   double get billableHours {
-    final start = DateTime(
-        date.year, date.month, date.day, startTime.hour, startTime.minute);
-    final end =
-        DateTime(date.year, date.month, date.day, endTime.hour, endTime.minute);
-    return end.difference(start).inMinutes / 60.0;
+    return endTime.difference(startTime).inSeconds / 3600.0;
   }
 
   double get totalEarnings => billableHours * (rate ?? 0);

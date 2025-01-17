@@ -62,7 +62,7 @@ class EntriesPage extends StatelessWidget {
                             size: 16, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
-                          '${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
+                          '${_formatDateTime(entry.startTime)} - ${_formatDateTime(entry.endTime)}',
                           style: const TextStyle(fontSize: 14),
                         ),
                       ],
@@ -112,5 +112,12 @@ class EntriesPage extends StatelessWidget {
 
   static String _twoDigits(int n) {
     return n.toString().padLeft(2, '0');
+  }
+
+  static String _formatDateTime(DateTime dt) {
+    final hours = dt.hour.toString().padLeft(2, '0');
+    final minutes = dt.minute.toString().padLeft(2, '0');
+    final seconds = dt.second.toString().padLeft(2, '0');
+    return '$hours:$minutes:${seconds == "00" ? "00" : seconds}';
   }
 }
