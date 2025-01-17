@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Timesheet Tracker',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Timesheet Tracker Home'),
@@ -51,7 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (_projects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a project first before clocking in.')),
+        const SnackBar(
+            content: Text('Please add a project first before clocking in.')),
       );
       return;
     }
@@ -66,39 +67,46 @@ class _MyHomePageState extends State<MyHomePage> {
           title: const Text('Select Project'),
           content: Form(
             key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<Project>(
-                  items: _projects
-                      .map(
-                        (project) => DropdownMenuItem<Project>(
-                          value: project,
-                          child: Text(project.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (Project? newValue) {
-                    tempSelectedProject = newValue;
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Please select a project';
-                    }
-                    return null;
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Project',
-                    border: OutlineInputBorder(),
+            child: Container(
+              width: 300.0,
+              child: DropdownButtonHideUnderline(
+                child: ButtonTheme(
+                  alignedDropdown: true,
+                  child: DropdownButtonFormField<Project>(
+                    isExpanded: true,
+                    items: _projects
+                        .map(
+                          (project) => DropdownMenuItem<Project>(
+                            value: project,
+                            child: Text(
+                              project.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (Project? newValue) {
+                      tempSelectedProject = newValue;
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a project';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Project',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop();
               },
               child: const Text('Cancel'),
             ),
@@ -115,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
 
-    if (selectedProject == null) return; 
+    if (selectedProject == null) return;
 
     setState(() {
       _isClockedIn = true;
@@ -129,7 +137,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final now = DateTime.now();
       setState(() {
         _elapsed = now.difference(_clockInTime!);
-        _currentEarnings = (_elapsed.inSeconds / 3600) * _currentProject!.hourlyRate;
+        _currentEarnings =
+            (_elapsed.inSeconds / 3600) * _currentProject!.hourlyRate;
       });
     });
   }
@@ -144,9 +153,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _timer?.cancel();
     });
 
-    
     final newEntry = TimeEntry(
-      date: DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
+      date:
+          DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
       endTime: TimeOfDay.fromDateTime(clockOutTime),
       project: _currentProject!,
@@ -175,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          projects: _projects, 
+          projects: _projects,
         ),
       ),
     );
@@ -204,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _timer?.cancel(); 
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -215,25 +224,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(widget.title,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
         actions: [
           IconButton(
             icon: const Icon(Icons.folder),
             tooltip: 'Manage Projects',
             onPressed: _navigateToManageProjects,
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+            ),
           ),
           if (!_isClockedIn)
             IconButton(
               icon: const Icon(Icons.login),
               tooltip: 'Clock In',
               onPressed: _clockIn,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+              ),
             )
           else
             IconButton(
               icon: const Icon(Icons.logout),
               tooltip: 'Clock Out',
               onPressed: _clockOut,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
             ),
         ],
       ),
@@ -262,7 +281,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('${entry.billableHours.toStringAsFixed(2)} hrs'),
+                              Text(
+                                  '${entry.billableHours.toStringAsFixed(2)} hrs'),
                               const SizedBox(height: 4),
                               Text(
                                 '\$${entry.totalEarnings.toStringAsFixed(2)}',
@@ -336,10 +356,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       SizedBox(height: 10),
                       ElevatedButton.icon(
                         onPressed: _clockOut,
-                        icon: const Icon(Icons.logout),
+                        icon: const Icon(Icons.logout, color: Colors.white),
                         label: const Text('Clock Out'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red, 
+                          backgroundColor: Colors.red[700],
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -349,37 +373,52 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddEntry,
-        tooltip: 'Add Time Entry',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, 
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16.0),
         color: Colors.grey[200],
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Total Earnings:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              spacing: 16,
+              children: [
+                const Text(
+                  'Total Earnings:',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '\$${totalEarnings.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[700],
+                  ),
+                ),
+              ],
             ),
-            Text(
-              '\$${totalEarnings.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.green[700],
+            IconButton(
+              icon: const Icon(Icons.add, size: 25),
+              onPressed: _navigateToAddEntry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                minimumSize: const Size(50, 50),
               ),
             ),
           ],
         ),
       ),
-    ); 
+    );
   }
 
   String _formatDuration(Duration duration) {
