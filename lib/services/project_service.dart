@@ -1,28 +1,28 @@
-import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/project.dart';
 import 'package:http/http.dart' as http;
 import 'package:dotenv/dotenv.dart';
 import 'dart:convert';
 
-class ClientResponse {
-  final List<Client> records;
+class ProjectResponse {
+  final List<Project> records;
   final bool hasMore;
   final String? nextCursor;
   final int pageSize;
 
-  ClientResponse({
+  ProjectResponse({
     required this.records,
     required this.hasMore,
     this.nextCursor,
     required this.pageSize,
   });
 
-  factory ClientResponse.fromJson(Map<String, dynamic> json) {
+  factory ProjectResponse.fromJson(Map<String, dynamic> json) {
     final meta = json['meta']['page'];
     final records = (json['records'] as List)
-        .map((record) => Client.fromJson(record))
+        .map((record) => Project.fromJson(record))
         .toList();
 
-    return ClientResponse(
+    return ProjectResponse(
       records: records,
       hasMore: meta['more'] ?? false,
       nextCursor: meta['cursor'],
@@ -31,55 +31,56 @@ class ClientResponse {
   }
 }
 
-class ClientService {
+class ProjectService {
   final String apiKey;
   final String databaseUrl;
 
-  ClientService._({
+  ProjectService._({
     required this.apiKey,
     required this.databaseUrl,
   });
 
-  static Future<ClientService> create() async {
+  static Future<ProjectService> create() async {
     var env = DotEnv()..load();
 
-    return ClientService._(
+    return ProjectService._(
       apiKey: env['XATA_API_KEY'] ?? '',
       databaseUrl: env['XATA_DATABASE_URL'] ?? '',
     );
   }
 
-  Future<ClientResponse> getClients() async {
+  Future<ProjectResponse> getProjects() async {
     final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/clients/query'),
+      Uri.parse('$databaseUrl/db/time-tracking:main/tables/projects/query'),
       headers: {
         'Authorization': 'Bearer $apiKey',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        "columns": ["xata_id", "client_name", "hourly_rate"],
+        "columns": ["xata_id", "name", "hourly_rate"],
         "page": {"size": 500}
       }),
     );
 
     if (response.statusCode == 200) {
-      final clientResponse = ClientResponse.fromJson(jsonDecode(response.body));
-      return clientResponse;
+      final projectResponse =
+          ProjectResponse.fromJson(jsonDecode(response.body));
+      return projectResponse;
     } else {
-      throw Exception('Failed to load clients');
+      throw Exception('Failed to load projects');
     }
   }
 
-  Future<void> createClient(Client client) async {
-    print('Creating client with data: ${client.toJson()}');
+  Future<void> createProject(Project project) async {
+    print('Creating project with data: ${project.toJson()}');
 
     final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/clients/data'),
+      Uri.parse('$databaseUrl/db/time-tracking:main/tables/projects/data'),
       headers: {
         'Authorization': 'Bearer $apiKey',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(client.toJson()),
+      body: jsonEncode(project.toJson()),
     );
 
     print('Response status: ${response.statusCode}');
@@ -87,14 +88,14 @@ class ClientService {
 
     if (response.statusCode != 201 && response.statusCode != 200) {
       throw Exception(
-          'Failed to create client: ${response.statusCode} - ${response.body}');
+          'Failed to create project: ${response.statusCode} - ${response.body}');
     }
   }
 
-  Future<void> deleteClient(String clientId) async {
+  Future<void> deleteProject(String projectId) async {
     final response = await http.delete(
       Uri.parse(
-          '$databaseUrl/db/time-tracking:main/tables/clients/data/$clientId'),
+          '$databaseUrl/db/time-tracking:main/tables/projects/data/$projectId'),
       headers: {
         'Authorization': 'Bearer $apiKey',
         'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ class ClientService {
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception(
-          'Failed to delete client: ${response.statusCode} - ${response.body}');
+          'Failed to delete project: ${response.statusCode} - ${response.body}');
     }
   }
 }

@@ -1,22 +1,22 @@
 import 'xata_metadata.dart';
 
-class Client {
+class Project {
   final String? id;
-  final String clientName;
-  final double hourlyRate;
-  final XataMetadata xata;
+  final String? name;
+  final double? hourlyRate;
+  final XataMetadata? xata;
 
-  Client({
+  Project({
     required this.id,
-    required this.clientName,
+    required this.name,
     required this.hourlyRate,
     required this.xata,
   });
 
-  factory Client.fromJson(Map<String, dynamic> json) {
-    return Client(
+  factory Project.fromJson(Map<String, dynamic> json) {
+    return Project(
       id: json['id'],
-      clientName: json['client_name'],
+      name: json['name'],
       hourlyRate: (json['hourly_rate'] is int)
           ? (json['hourly_rate'] as int).toDouble()
           : json['hourly_rate'].toDouble(),
@@ -26,7 +26,7 @@ class Client {
 
   Map<String, dynamic> toJson() {
     return {
-      'client_name': clientName,
+      'name': name,
       'hourly_rate': hourlyRate,
       if (id != null) 'id': id,
     };

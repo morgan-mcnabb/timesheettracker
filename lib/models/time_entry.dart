@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/project.dart';
 
 class TimeEntry {
   final String? id;
   final DateTime date;
   final TimeOfDay startTime;
   final TimeOfDay endTime;
-  final Client client;
-  final double hourlyRate;
+  final Project? project;
+  final String? projectName;
+  final double? rate;
 
   TimeEntry({
     required this.id,
     required this.date,
     required this.startTime,
     required this.endTime,
-    required this.client,
-    required this.hourlyRate,
+    required this.project,
+    required this.rate,
+    required this.projectName,
   });
 
   factory TimeEntry.fromJson(Map<String, dynamic> json) {
@@ -33,8 +35,10 @@ class TimeEntry {
         hour: endDateTime.hour,
         minute: endDateTime.minute,
       ),
-      client: Client.fromJson(json['client']),
-      hourlyRate: json['client']['hourly_rate']?.toDouble() ?? 0.0,
+      project:
+          json['project'] != null ? Project.fromJson(json['project']) : null,
+      projectName: json['project']?['name'],
+      rate: json['rate']?.toDouble() ?? 0.0,
     );
   }
 
@@ -58,7 +62,9 @@ class TimeEntry {
     return {
       'start_time': startDateTime.toIso8601String(),
       'end_time': endDateTime.toIso8601String(),
-      'client': client.id,
+      'project': project?.id,
+      'rate': rate,
+      'project_name': projectName,
     };
   }
 
@@ -70,5 +76,5 @@ class TimeEntry {
     return end.difference(start).inMinutes / 60.0;
   }
 
-  double get totalEarnings => billableHours * hourlyRate;
+  double get totalEarnings => billableHours * (rate ?? 0);
 }

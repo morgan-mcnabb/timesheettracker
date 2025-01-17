@@ -57,7 +57,13 @@ class TimeEntryService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        "columns": ["start_time", "end_time", "client.*"],
+        "columns": [
+          "start_time",
+          "end_time",
+          "project.*",
+          "rate",
+          "project_name"
+        ],
         "page": {"size": 500}
       }),
     );

@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/project.dart';
 import 'package:timesheettracker/models/xata_metadata.dart';
-import 'package:timesheettracker/services/client_service.dart';
+import 'package:timesheettracker/services/project_service.dart';
 
-class ClientListPage extends StatefulWidget {
-  final List<Client> clients;
-  final Function(Client) onAdd;
+class ProjectListPage extends StatefulWidget {
+  final List<Project> projects;
+  final Function(Project) onAdd;
   final Function(int) onDelete;
 
-  const ClientListPage({
+  const ProjectListPage({
     Key? key,
-    required this.clients,
+    required this.projects,
     required this.onAdd,
     required this.onDelete,
   }) : super(key: key);
 
   @override
-  _ClientListPageState createState() => _ClientListPageState();
+  _ProjectListPageState createState() => _ProjectListPageState();
 }
 
-class _ClientListPageState extends State<ClientListPage> {
-  void _addClient() async {
+class _ProjectListPageState extends State<ProjectListPage> {
+  void _addProject() async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        String clientName = '';
+        String projectName = '';
         double hourlyRate = 0.0;
         final _formKey = GlobalKey<FormState>();
 
         return AlertDialog(
-          title: const Text('Add Client'),
+          title: const Text('Add Project'),
           content: Form(
             key: _formKey,
             child: Column(
@@ -38,11 +38,11 @@ class _ClientListPageState extends State<ClientListPage> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Project Name'),
                   onChanged: (value) {
-                    clientName = value;
+                    projectName = value;
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a client name';
+                      return 'Please enter a project name';
                     }
                     return null;
                   },
@@ -82,10 +82,10 @@ class _ClientListPageState extends State<ClientListPage> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   try {
-                    final clientService = await ClientService.create();
-                    final newClient = Client(
+                    final projectService = await ProjectService.create();
+                    final newProject = Project(
                       id: null,
-                      clientName: clientName,
+                      name: projectName,
                       hourlyRate: hourlyRate,
                       xata: XataMetadata(
                         createdAt: DateTime.now(),
@@ -93,18 +93,18 @@ class _ClientListPageState extends State<ClientListPage> {
                         version: 1,
                       ),
                     );
-                    await clientService.createClient(newClient);
-                    final updatedClients = await clientService.getClients();
+                    await projectService.createProject(newProject);
+                    final updatedProjects = await projectService.getProjects();
                     setState(() {
-                      widget.clients.clear();
-                      widget.clients.addAll(updatedClients.records);
+                      widget.projects.clear();
+                      widget.projects.addAll(updatedProjects.records);
                     });
                     Navigator.of(context).pop();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                           content:
-                              Text('Error creating client: ${e.toString()}')),
+                              Text('Error creating project: ${e.toString()}')),
                     );
                   }
                 }
@@ -121,39 +121,40 @@ class _ClientListPageState extends State<ClientListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clients'),
+        title: const Text('Projects'),
       ),
-      body: widget.clients.isEmpty
+      body: widget.projects.isEmpty
           ? const Center(
               child: Text(
-                'No clients added yet.',
+                'No projects added yet.',
                 style: TextStyle(fontSize: 18),
               ),
             )
           : ListView.builder(
-              itemCount: widget.clients.length,
+              itemCount: widget.projects.length,
               itemBuilder: (context, index) {
-                final client = widget.clients[index];
+                final project = widget.projects[index];
                 return ListTile(
-                  title: Text(client.clientName),
+                  title: Text(project.name ?? ''),
                   subtitle: Text(
-                      'Hourly Rate: \$${client.hourlyRate.toStringAsFixed(2)}'),
+                      'Hourly Rate: \$${project.hourlyRate?.toStringAsFixed(2) ?? ''}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
                       try {
-                        final clientService = await ClientService.create();
-                        await clientService.deleteClient(client.id!);
-                        final updatedClients = await clientService.getClients();
+                        final projectService = await ProjectService.create();
+                        await projectService.deleteProject(project.id!);
+                        final updatedProjects =
+                            await projectService.getProjects();
                         setState(() {
-                          widget.clients.clear();
-                          widget.clients.addAll(updatedClients.records);
+                          widget.projects.clear();
+                          widget.projects.addAll(updatedProjects.records);
                         });
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
-                                Text('Error deleting client: ${e.toString()}'),
+                                Text('Error deleting project: ${e.toString()}'),
                           ),
                         );
                       }
@@ -163,8 +164,8 @@ class _ClientListPageState extends State<ClientListPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addClient,
-        tooltip: 'Add Client',
+        onPressed: _addProject,
+        tooltip: 'Add Project',
         child: const Icon(Icons.add),
       ),
     );

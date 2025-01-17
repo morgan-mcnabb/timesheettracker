@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:timesheettracker/models/time_entry.dart';
-import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/project.dart';
 import 'package:timesheettracker/services/time_entry_service.dart';
 
 class AddTimeEntryPage extends StatefulWidget {
   final Function(TimeEntry) onAdd;
-  final List<Client> clients;
+  final List<Project> projects;
   final TimeEntryService timeEntryService;
 
   const AddTimeEntryPage({
     Key? key,
     required this.onAdd,
-    required this.clients,
+    required this.projects,
     required this.timeEntryService,
   }) : super(key: key);
 
@@ -25,7 +25,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _startTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: 17, minute: 0);
-  Client? _selectedClient;
+  Project? _selectedProject;
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -80,8 +80,9 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         date: _selectedDate,
         startTime: _startTime,
         endTime: _endTime,
-        client: _selectedClient!,
-        hourlyRate: _selectedClient!.hourlyRate,
+        project: _selectedProject!,
+        rate: _selectedProject!.hourlyRate ?? 0,
+        projectName: _selectedProject!.name ?? '',
       );
 
       widget.timeEntryService.createTimeEntry(newEntry).then((_) async {
@@ -130,27 +131,27 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickEndTime,
                   ),
                   SizedBox(height: 20),
-                  DropdownButtonFormField<Client>(
+                  DropdownButtonFormField<Project>(
                     decoration: InputDecoration(
-                      labelText: 'Select Client',
+                      labelText: 'Select Project',
                       border: OutlineInputBorder(),
                     ),
-                    items: widget.clients
+                    items: widget.projects
                         .map(
-                          (client) => DropdownMenuItem<Client>(
-                            value: client,
-                            child: Text(client.clientName),
+                          (project) => DropdownMenuItem<Project>(
+                            value: project,
+                            child: Text(project.name ?? ''),
                           ),
                         )
                         .toList(),
-                    onChanged: (Client? newValue) {
+                    onChanged: (Project? newValue) {
                       setState(() {
-                        _selectedClient = newValue;
+                        _selectedProject = newValue;
                       });
                     },
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a client';
+                        return 'Please select a project';
                       }
                       return null;
                     },

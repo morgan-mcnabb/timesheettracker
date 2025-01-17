@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/project.dart';
 import 'package:timesheettracker/models/time_entry.dart';
-import 'package:timesheettracker/services/client_service.dart';
+import 'package:timesheettracker/services/project_service.dart';
 import 'add_time_entry_page.dart';
 import 'project_list_page.dart';
 import 'dart:async';
@@ -39,30 +39,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<TimeEntry> _timeEntries = [];
-  List<Client> _clients = [];
+  List<Project> _projects = [];
 
   bool _isClockedIn = false;
   DateTime? _clockInTime;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
   double _currentEarnings = 0.0;
-  Client? _currentClient;
+  Project? _currentProject;
 
   void _clockIn() async {
     if (_isClockedIn) return;
 
-    if (_clients.isEmpty) {
+    if (_projects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please add a client first before clocking in.')),
+            content: Text('Please add a project first before clocking in.')),
       );
       return;
     }
 
-    Client? selectedClient = await showDialog<Client>(
+    Project? selectedProject = await showDialog<Project>(
       context: context,
       builder: (BuildContext context) {
-        Client? tempSelectedClient;
+        Project? tempSelectedProject;
         final _formKey = GlobalKey<FormState>();
 
         return AlertDialog(
@@ -74,21 +74,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: DropdownButtonHideUnderline(
                 child: ButtonTheme(
                   alignedDropdown: true,
-                  child: DropdownButtonFormField<Client>(
+                  child: DropdownButtonFormField<Project>(
                     isExpanded: true,
-                    items: _clients
+                    items: _projects
                         .map(
-                          (client) => DropdownMenuItem<Client>(
-                            value: client,
+                          (project) => DropdownMenuItem<Project>(
+                            value: project,
                             child: Text(
-                              client.clientName,
+                              project.name ?? '',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )
                         .toList(),
-                    onChanged: (Client? newValue) {
-                      tempSelectedClient = newValue;
+                    onChanged: (Project? newValue) {
+                      tempSelectedProject = newValue;
                     },
                     validator: (value) {
                       if (value == null) {
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.of(context).pop(tempSelectedClient);
+                  Navigator.of(context).pop(tempSelectedProject);
                 }
               },
               child: const Text('Select'),
@@ -125,14 +125,14 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
 
-    if (selectedClient == null) return;
+    if (selectedProject == null) return;
 
     setState(() {
       _isClockedIn = true;
       _clockInTime = DateTime.now();
       _elapsed = Duration.zero;
       _currentEarnings = 0.0;
-      _currentClient = selectedClient;
+      _currentProject = selectedProject;
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -140,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _elapsed = now.difference(_clockInTime!);
         _currentEarnings =
-            (_elapsed.inSeconds / 3600) * _currentClient!.hourlyRate;
+            (_elapsed.inSeconds / 3600) * (_currentProject!.hourlyRate ?? 0);
       });
     });
   }
@@ -161,8 +161,9 @@ class _MyHomePageState extends State<MyHomePage> {
           DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
       endTime: TimeOfDay.fromDateTime(clockOutTime),
-      client: _currentClient!,
-      hourlyRate: _currentClient!.hourlyRate,
+      project: _currentProject!,
+      rate: _currentProject!.hourlyRate ?? 0,
+      projectName: _currentProject!.name ?? '',
     );
 
     TimeEntryService.create().then((service) {
@@ -173,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _elapsed = Duration.zero;
           _currentEarnings = 0.0;
           _clockInTime = null;
-          _currentClient = null;
+          _currentProject = null;
         });
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -194,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          clients: _clients,
+          projects: _projects,
           timeEntryService: timeEntryService,
         ),
       ),
@@ -205,16 +206,16 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClientListPage(
-          clients: _clients,
-          onAdd: (newClient) {
+        builder: (context) => ProjectListPage(
+          projects: _projects,
+          onAdd: (newProject) {
             setState(() {
-              _clients.add(newClient);
+              _projects.add(newProject);
             });
           },
           onDelete: (index) {
             setState(() {
-              _clients.removeAt(index);
+              _projects.removeAt(index);
             });
           },
         ),
@@ -237,15 +238,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadData() async {
     try {
       final timeEntryService = await TimeEntryService.create();
-      final clientService = await ClientService.create();
+      final projectService = await ProjectService.create();
 
       final timeEntriesResponse = await timeEntryService.getTimeEntries();
-      final clientsResponse = await clientService.getClients();
+      final projectsResponse = await projectService.getProjects();
 
       if (mounted) {
         setState(() {
           _timeEntries = List<TimeEntry>.from(timeEntriesResponse.records);
-          _clients = List<Client>.from(clientsResponse.records);
+          _projects = List<Project>.from(projectsResponse.records);
         });
       }
     } catch (e) {
@@ -270,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.folder),
-            tooltip: 'Manage Clients',
+            tooltip: 'Manage Projects',
             onPressed: _navigateToManageProjects,
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
@@ -313,7 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         final entry = _timeEntries[index];
                         return ListTile(
                           leading: const Icon(Icons.work),
-                          title: Text(entry.client.clientName),
+                          title: Text(entry.projectName ?? ''),
                           subtitle: Text(
                             '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
                           ),
@@ -355,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'Client: ${_currentClient!.clientName}',
+                        'Project: ${_currentProject!.name}',
                         style: TextStyle(fontSize: 16),
                       ),
                       SizedBox(height: 10),
