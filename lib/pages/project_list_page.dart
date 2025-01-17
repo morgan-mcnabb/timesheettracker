@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/xata_metadata.dart';
 import '../models/timesheet_model.dart';
 import '../models/project.dart';
-import '../constants.dart';
+import '../styles.dart';
 
 class ProjectListPage extends StatelessWidget {
   const ProjectListPage({super.key});
@@ -109,9 +109,9 @@ class ProjectListPage extends StatelessWidget {
           _showAddProjectDialog(context);
         },
         tooltip: 'Add Project',
-        child: const Icon(Icons.add),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -120,7 +120,7 @@ class ProjectListPage extends StatelessWidget {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
     String projectName = '';
     String hourlyRateStr = '';
-    final _dialogFormKey = GlobalKey<FormState>();
+    final dialogFormKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -128,7 +128,7 @@ class ProjectListPage extends StatelessWidget {
         return AlertDialog(
           title: const Text('Add Project'),
           content: Form(
-            key: _dialogFormKey,
+            key: dialogFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -188,7 +188,7 @@ class ProjectListPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_dialogFormKey.currentState!.validate()) {
+                if (dialogFormKey.currentState!.validate()) {
                   final double hourlyRate = double.parse(hourlyRateStr);
                   final newProject = Project(
                     id: "",
@@ -212,7 +212,7 @@ class ProjectListPage extends StatelessWidget {
     );
   }
 
-  static String _twoDigits(int n) {
+  static String twoDigits(int n) {
     return n.toString().padLeft(2, '0');
   }
 }

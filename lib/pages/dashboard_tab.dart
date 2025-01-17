@@ -3,7 +3,7 @@ import 'summary_tab.dart';
 import 'recent_entries_tab.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
-import '../constants.dart';
+import '../styles.dart';
 import 'project_list_page.dart';
 
 class DashboardTab extends StatelessWidget {
@@ -11,12 +11,12 @@ class DashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 2,
       child: Scaffold(
         body: Column(
           children: [
-            const Material(
+            Material(
               color: Colors.white,
               child: TabBar(
                 labelColor: Colors.deepPurple,
@@ -30,7 +30,7 @@ class DashboardTab extends StatelessWidget {
               ),
             ),
             ClockSection(),
-            const Expanded(
+            Expanded(
               child: TabBarView(
                 children: [
                   SummaryTab(),
@@ -205,7 +205,7 @@ class ClockSection extends StatelessWidget {
     }
 
     String selectedProject = projects[0].name ?? "";
-    final _dialogFormKey = GlobalKey<FormState>();
+    final dialogFormKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
@@ -213,7 +213,7 @@ class ClockSection extends StatelessWidget {
         return AlertDialog(
           title: const Text('Select Project to Clock In'),
           content: Form(
-            key: _dialogFormKey,
+            key: dialogFormKey,
             child: DropdownButtonFormField<String>(
               value: selectedProject,
               items: projects
@@ -250,7 +250,7 @@ class ClockSection extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_dialogFormKey.currentState!.validate()) {
+                if (dialogFormKey.currentState!.validate()) {
                   final project = projects.firstWhere((proj) => proj.name == selectedProject);
                   timesheet.clockIn(project);
                   Navigator.of(context).pop();

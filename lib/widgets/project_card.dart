@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/project.dart';
-import '../constants.dart';
-
+import '../styles.dart';
 class ProjectCard extends StatelessWidget {
   final Project project;
   final double hoursLogged;
   final double earnings;
 
   const ProjectCard({
-    Key? key,
+    super.key,
     required this.project,
     required this.hoursLogged,
     required this.earnings,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

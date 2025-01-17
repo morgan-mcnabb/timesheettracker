@@ -1,8 +1,8 @@
-  String _twoDigits(int n) {
+  String twoDigits(int n) {
     return n.toString().padLeft(2, '0');
   }
 
-  String _formatDateTime(DateTime dt) {
+  String formatDateTime(DateTime dt) {
     final hours = dt.hour.toString().padLeft(2, '0');
     final minutes = dt.minute.toString().padLeft(2, '0');
     final seconds = dt.second.toString().padLeft(2, '0');
