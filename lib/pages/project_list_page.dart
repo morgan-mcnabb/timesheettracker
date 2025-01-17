@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/xata_metadata.dart';
 import '../models/timesheet_model.dart';
 import '../models/project.dart';
-import '../constants.dart';
+import '../styles.dart';
 
 class ProjectListPage extends StatelessWidget {
   const ProjectListPage({super.key});
@@ -12,23 +12,23 @@ class ProjectListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
       ),
       body: projects.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.business, size: 80, color: Colors.grey[400]),
+                  Icon(Icons.business, size: 80, color: colorScheme.onSurfaceVariant),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No projects added yet.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -39,37 +39,29 @@ class ProjectListPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final project = projects[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  elevation: 3,
                   child: ListTile(
                     leading: Icon(
                       Icons.work,
-                      color: Colors.deepPurple[700],
+                      color: colorScheme.primary,
                       size: 30,
                     ),
                     title: Text(
                       project.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)
                     ),
                     subtitle: Row(
                       children: [
                         Icon(Icons.attach_money,
-                            size: 16, color: Colors.grey[700]),
+                            size: 16, color: colorScheme.secondary),
                         const SizedBox(width: 4),
                         Text(
                           '\$${project.hourlyRate.toStringAsFixed(2)} / hr',
-                          style: const TextStyle(fontSize: 14),
+                          style: textTheme.bodySmall,
                         ),
                       ],
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: colorScheme.error),
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -90,7 +82,7 @@ class ProjectListPage extends StatelessWidget {
                                   Navigator.of(context).pop();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: colorScheme.error,
                                   foregroundColor: Colors.white,
                                 ),
                                 child: const Text('Delete'),
@@ -110,8 +102,6 @@ class ProjectListPage extends StatelessWidget {
         },
         tooltip: 'Add Project',
         child: const Icon(Icons.add),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
       ),
     );
   }
@@ -120,7 +110,8 @@ class ProjectListPage extends StatelessWidget {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
     String projectName = '';
     String hourlyRateStr = '';
-    final _dialogFormKey = GlobalKey<FormState>();
+    final dialogFormKey = GlobalKey<FormState>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     showDialog(
       context: context,
@@ -128,16 +119,16 @@ class ProjectListPage extends StatelessWidget {
         return AlertDialog(
           title: const Text('Add Project'),
           content: Form(
-            key: _dialogFormKey,
+            key: dialogFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon:
-                        Icon(Icons.work_outline, color: Colors.deepPurple),
+                        Icon(Icons.work_outline, color: colorScheme.primary),
                     labelText: 'Project Name',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   onChanged: (value) {
                     projectName = value;
@@ -151,11 +142,11 @@ class ProjectListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     prefixIcon:
-                        Icon(Icons.attach_money, color: Colors.deepPurple),
+                        Icon(Icons.attach_money, color: colorScheme.primary),
                     labelText: 'Hourly Rate (\$)',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -188,7 +179,7 @@ class ProjectListPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (_dialogFormKey.currentState!.validate()) {
+                if (dialogFormKey.currentState!.validate()) {
                   final double hourlyRate = double.parse(hourlyRateStr);
                   final newProject = Project(
                     id: "",
@@ -212,7 +203,7 @@ class ProjectListPage extends StatelessWidget {
     );
   }
 
-  static String _twoDigits(int n) {
+  static String twoDigits(int n) {
     return n.toString().padLeft(2, '0');
   }
 }

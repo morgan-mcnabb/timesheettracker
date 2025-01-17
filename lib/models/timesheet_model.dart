@@ -4,8 +4,8 @@ import 'project.dart';
 import 'time_entry.dart';
 
 class TimesheetModel extends ChangeNotifier {
-  List<TimeEntry> _timeEntries = [];
-  List<Project> _projects = [];
+  final List<TimeEntry> _timeEntries = [];
+  final List<Project> _projects = [];
 
   bool _isClockedIn = false;
   bool _isPaused = false;

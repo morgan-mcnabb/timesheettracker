@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
-import '../models/time_entry.dart';
 import '../models/project.dart';
-import '../constants.dart';
+import '../styles.dart';
+import '../utils.dart';
 
 class AddTimeEntryPage extends StatefulWidget {
   const AddTimeEntryPage({super.key});
@@ -44,10 +44,11 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         );
       },
     );
-    if (picked != null && picked != _selectedDate)
+    if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
       });
+    }
   }
 
   Future<void> _pickStartTime() async {
@@ -72,10 +73,11 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         );
       },
     );
-    if (picked != null && picked != _startTime)
+    if (picked != null && picked != _startTime) {
       setState(() {
         _startTime = picked;
       });
+    }
   }
 
   Future<void> _pickEndTime() async {
@@ -100,10 +102,11 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         );
       },
     );
-    if (picked != null && picked != _endTime)
+    if (picked != null && picked != _endTime) {
       setState(() {
         _endTime = picked;
       });
+    }
   }
 
   bool _validateTimeOrder() {
@@ -146,11 +149,12 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Time Entry'),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(standardPadding),
@@ -159,9 +163,9 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
           child: ListView(
             children: [
               ListTile(
-                leading: Icon(Icons.calendar_today, color: Colors.deepPurple),
+                leading: Icon(Icons.calendar_today, color: colorScheme.primary),
                 title: Text(
-                    'Date: ${_selectedDate.year}-${_twoDigits(_selectedDate.month)}-${_twoDigits(_selectedDate.day)}'),
+                    'Date: ${_selectedDate.year}-${twoDigits(_selectedDate.month)}-${twoDigits(_selectedDate.day)}'),
                 trailing: const Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
@@ -171,7 +175,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: Icon(Icons.access_time, color: Colors.deepPurple),
+                leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('Start Time: ${_startTime.format(context)}'),
                 trailing: const Icon(
                   Icons.arrow_forward_ios,
@@ -182,7 +186,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: Icon(Icons.access_time, color: Colors.deepPurple),
+                leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('End Time: ${_endTime.format(context)}'),
                 trailing: const Icon(
                   Icons.arrow_forward_ios,
@@ -195,7 +199,8 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               DropdownButtonFormField<Project>(
                 decoration: InputDecoration(
                   prefixIcon:
-                      Icon(Icons.work_outline, color: Colors.deepPurple),
+                      Icon(Icons.work_outline, color: colorScheme.primary,
+                  ),
                   labelText: 'Select Project',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
@@ -224,13 +229,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                ),
                 child: const Text(
                   'Add Entry',
                   style: TextStyle(fontSize: 16),
@@ -241,9 +239,5 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         ),
       ),
     );
-  }
-
-  static String _twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
   }
 }

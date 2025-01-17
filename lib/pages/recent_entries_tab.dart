@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
 import '../models/time_entry.dart';
+import '../utils.dart';
 
 class RecentEntriesTab extends StatelessWidget {
   const RecentEntriesTab({super.key});
@@ -10,6 +11,8 @@ class RecentEntriesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     List<TimeEntry> recentEntries = List.from(timesheet.timeEntries);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     recentEntries.sort((a, b) {
       DateTime aStart = DateTime(a.date.year, a.date.month, a.date.day,
@@ -47,32 +50,29 @@ class RecentEntriesTab extends StatelessWidget {
             child: ListTile(
               leading: Icon(
                 Icons.work,
-                color: Colors.deepPurple[700],
+                color: colorScheme.primary,
                 size: 30,
               ),
               title: Text(
                 entry.project.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               subtitle: Row(
                 children: [
                   Icon(Icons.calendar_today,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
-                    '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)}',
-                    style: const TextStyle(fontSize: 14),
+                    '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 16),
                   Icon(Icons.access_time,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
-                    '${_formatDateTime(entry.startTime)} - ${_formatDateTime(entry.endTime)}',
-                    style: const TextStyle(fontSize: 14),
+                    '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
+                    style: textTheme.bodySmall,
                   ),
                 ],
               ),
@@ -84,11 +84,11 @@ class RecentEntriesTab extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.timer,
-                          size: 16, color: Colors.grey[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '${entry.billableHours.toStringAsFixed(2)} hrs',
-                        style: const TextStyle(fontSize: 14),
+                        style: textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -97,14 +97,13 @@ class RecentEntriesTab extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.attach_money,
-                          size: 16, color: Colors.green[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.secondary,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green,
                         ),
                       ),
                     ],
@@ -118,16 +117,5 @@ class RecentEntriesTab extends StatelessWidget {
         },
       ),
     );
-  }
-
-  static String _twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
-  }
-
-  static String _formatDateTime(DateTime dt) {
-    final hours = dt.hour.toString().padLeft(2, '0');
-    final minutes = dt.minute.toString().padLeft(2, '0');
-    final seconds = dt.second.toString().padLeft(2, '0');
-    return '$hours:$minutes:${seconds == "00" ? "00" : seconds}';
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
+import '../styles.dart';
 
 class SummaryTab extends StatelessWidget {
   const SummaryTab({super.key});
@@ -12,8 +13,8 @@ class SummaryTab extends StatelessWidget {
         timesheet.timeEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
     double totalHoursLogged =
         timesheet.timeEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
-
-    const double standardPadding = 16.0;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Padding(
       padding: const EdgeInsets.all(standardPadding),
@@ -27,7 +28,7 @@ class SummaryTab extends StatelessWidget {
         ),
         children: [
           Card(
-            color: Colors.blue[50],
+            color: Colors.grey[400],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -38,29 +39,23 @@ class SummaryTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.access_time,
-                      color: Colors.blue[700], size: 40),
+                      color: colorScheme.primary, size: 40),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Total Hours Logged',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '${totalHoursLogged.toStringAsFixed(2)} hrs',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.primary),
                   ),
                 ],
               ),
             ),
           ),
           Card(
-            color: Colors.green[50],
+            color: Colors.grey[400],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -71,22 +66,18 @@ class SummaryTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.attach_money,
-                      color: Colors.green[700], size: 40),
+                      color: colorScheme.primary, size: 40),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Total Earnings',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold,),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '\$${totalEarnings.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ],
