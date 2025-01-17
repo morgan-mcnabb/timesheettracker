@@ -13,17 +13,16 @@ class EntriesPage extends StatelessWidget {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<TimeEntry> timeEntries = timesheet.timeEntries;
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Time Entries'),
       ),
       body: timeEntries.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No time entries yet.',
-                style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             )
           : ListView.builder(
@@ -32,15 +31,23 @@ class EntriesPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final entry = timeEntries[index];
                 return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  elevation: 2,
                   child: ListTile(
                     leading: Icon(
-                      Icons.business,
-                      color: Colors.blue,
+                      Icons.work,
+                      color: colorScheme.primary,
                       size: 30,
                     ),
                     title: Text(
                       entry.project.name,
-                      style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold,),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     subtitle: Row(
                       children: [
@@ -49,7 +56,7 @@ class EntriesPage extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
-                          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 14),
                         ),
                         const SizedBox(width: 16),
                         Icon(Icons.access_time,
@@ -57,7 +64,7 @@ class EntriesPage extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
-                          style: textTheme.bodySmall,
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
@@ -73,7 +80,7 @@ class EntriesPage extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '${entry.billableHours.toStringAsFixed(2)} hrs',
-                              style: textTheme.bodySmall,
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ],
                         ),
@@ -86,16 +93,18 @@ class EntriesPage extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.secondary,
+                              style: const TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.green,
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    onTap: () {},
+                    onTap: () {
+                    },
                   ),
                 );
               },
