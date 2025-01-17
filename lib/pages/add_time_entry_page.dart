@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
 import '../models/project.dart';
 import '../styles.dart';
+import '../utils.dart';
 
 class AddTimeEntryPage extends StatefulWidget {
   const AddTimeEntryPage({super.key});
@@ -152,7 +153,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Time Entry'),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
         padding: const EdgeInsets.all(standardPadding),
@@ -197,7 +197,8 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               DropdownButtonFormField<Project>(
                 decoration: InputDecoration(
                   prefixIcon:
-                      const Icon(Icons.work_outline, color: Colors.deepPurple),
+                      Icon(Icons.work_outline, color: Theme.of(context).colorScheme.primary,
+                  ),
                   labelText: 'Select Project',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
@@ -226,13 +227,6 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                ),
                 child: const Text(
                   'Add Entry',
                   style: TextStyle(fontSize: 16),
@@ -243,9 +237,5 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
         ),
       ),
     );
-  }
-
-  static String twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
   }
 }

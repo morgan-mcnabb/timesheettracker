@@ -71,7 +71,7 @@ class SummaryTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.attach_money,
-                      color: Colors.green[700], size: 40),
+                      color: Theme.of(context).colorScheme.secondary, size: 40),
                   const SizedBox(height: 16),
                   const Text(
                     'Total Earnings',

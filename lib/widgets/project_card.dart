@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/project.dart';
 import '../styles.dart';
+
 class ProjectCard extends StatelessWidget {
   final Project project;
   final double hoursLogged;
@@ -15,12 +16,11 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(standardPadding),
         child: Column(
@@ -28,15 +28,13 @@ class ProjectCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.work, color: Colors.deepPurple[700], size: 30),
+                Icon(Icons.work, color: colorScheme.primary, size: 30),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     project.name,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -46,21 +44,25 @@ class ProjectCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Hourly Rate: \$${project.hourlyRate.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const Divider(height: 20, color: Colors.grey),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Hours Logged',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.secondary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   '${hoursLogged.toStringAsFixed(2)} hrs',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.blue,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.secondary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -70,15 +72,16 @@ class ProjectCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Earnings',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 Text(
                   '\$${earnings.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.green,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.secondary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

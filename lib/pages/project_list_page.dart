@@ -12,7 +12,9 @@ class ProjectListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
@@ -24,11 +26,11 @@ class ProjectListPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.business, size: 80, color: Colors.grey[400]),
+                  Icon(Icons.business, size: 80, color: colorScheme.onSurfaceVariant),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No projects added yet.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -39,37 +41,29 @@ class ProjectListPage extends StatelessWidget {
               itemBuilder: (context, index) {
                 final project = projects[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  elevation: 3,
                   child: ListTile(
                     leading: Icon(
                       Icons.work,
-                      color: Colors.deepPurple[700],
+                      color: colorScheme.primary,
                       size: 30,
                     ),
                     title: Text(
                       project.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)
                     ),
                     subtitle: Row(
                       children: [
                         Icon(Icons.attach_money,
-                            size: 16, color: Colors.grey[700]),
+                            size: 16, color: colorScheme.secondary),
                         const SizedBox(width: 4),
                         Text(
                           '\$${project.hourlyRate.toStringAsFixed(2)} / hr',
-                          style: const TextStyle(fontSize: 14),
+                          style: textTheme.bodySmall,
                         ),
                       ],
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: colorScheme.error),
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -90,7 +84,7 @@ class ProjectListPage extends StatelessWidget {
                                   Navigator.of(context).pop();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: colorScheme.error,
                                   foregroundColor: Colors.white,
                                 ),
                                 child: const Text('Delete'),
@@ -109,8 +103,6 @@ class ProjectListPage extends StatelessWidget {
           _showAddProjectDialog(context);
         },
         tooltip: 'Add Project',
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
     );

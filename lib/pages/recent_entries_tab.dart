@@ -11,6 +11,7 @@ class RecentEntriesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     List<TimeEntry> recentEntries = List.from(timesheet.timeEntries);
+    final colorScheme = Theme.of(context).colorScheme;
 
     recentEntries.sort((a, b) {
       DateTime aStart = DateTime(a.date.year, a.date.month, a.date.day,
@@ -61,7 +62,7 @@ class RecentEntriesTab extends StatelessWidget {
               subtitle: Row(
                 children: [
                   Icon(Icons.calendar_today,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
                     '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
@@ -69,7 +70,7 @@ class RecentEntriesTab extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Icon(Icons.access_time,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
                     '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
@@ -85,7 +86,7 @@ class RecentEntriesTab extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.timer,
-                          size: 16, color: Colors.grey[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '${entry.billableHours.toStringAsFixed(2)} hrs',
@@ -98,7 +99,7 @@ class RecentEntriesTab extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.attach_money,
-                          size: 16, color: Colors.green[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '\$${entry.totalEarnings.toStringAsFixed(2)}',

@@ -56,6 +56,8 @@ class ClockSection extends StatelessWidget {
     final currentEarnings = timesheet.currentEarnings;
     final elapsed = timesheet.elapsed;
     final currentProject = timesheet.currentProject;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     String elapsedTime =
         '${elapsed.inHours.toString().padLeft(2, '0')}:${(elapsed.inMinutes % 60).toString().padLeft(2, '0')}:${(elapsed.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -74,10 +76,8 @@ class ClockSection extends StatelessWidget {
           children: [
             Text(
               'Time Tracking',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.teal[800],
+              style: textTheme.headlineMedium?.copyWith(
+                color: colorScheme.primary,
               ),
             ),
             const SizedBox(height: 12),
@@ -89,15 +89,6 @@ class ClockSection extends StatelessWidget {
                   },
                   icon: const Icon(Icons.play_arrow, size: 20),
                   label: const Text('Clock In'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
                 ),
               )
             else
@@ -106,17 +97,19 @@ class ClockSection extends StatelessWidget {
                 children: [
                   Text(
                     'Project: ${currentProject?.name ?? 'N/A'}',
-                    style: const TextStyle(fontSize: 16),
+                    style: textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Elapsed Time: $elapsedTime',
-                    style: const TextStyle(fontSize: 16),
+                    style: textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Current Earnings: \$${currentEarnings.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 16, color: Colors.green),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.secondary,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -132,8 +125,8 @@ class ClockSection extends StatelessWidget {
                         icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 20),
                         label: Text(isPaused ? 'Resume' : 'Pause'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPaused ? Colors.green : Colors.teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: isPaused ? colorScheme.secondary : colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
@@ -149,8 +142,8 @@ class ClockSection extends StatelessWidget {
                         icon: const Icon(Icons.stop, size: 20),
                         label: const Text('Clock Out'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.error,
+                          foregroundColor: colorScheme.onError,
                           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
