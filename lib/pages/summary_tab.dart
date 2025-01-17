@@ -28,7 +28,7 @@ class SummaryTab extends StatelessWidget {
         ),
         children: [
           Card(
-            color: colorScheme.primary.withValues(alpha: 0.1),
+            color: Colors.grey[400],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -55,7 +55,7 @@ class SummaryTab extends StatelessWidget {
             ),
           ),
           Card(
-            color: colorScheme.secondary.withValues(alpha: 0.1),
+            color: Colors.grey[400],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
@@ -66,7 +66,7 @@ class SummaryTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.attach_money,
-                      color: colorScheme.secondary, size: 40),
+                      color: colorScheme.primary, size: 40),
                   const SizedBox(height: 16),
                   Text(
                     'Total Earnings',
@@ -77,7 +77,7 @@ class SummaryTab extends StatelessWidget {
                     '\$${totalEarnings.toStringAsFixed(2)}',
                     style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.secondary,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ],

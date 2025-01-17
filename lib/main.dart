@@ -25,15 +25,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Timesheet Tracker',
       debugShowCheckedModeBanner: false,
-      /*theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
-        useMaterial3: true,
-        textTheme: const TextTheme(
-          headlineMedium:
-              TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          bodySmall: TextStyle(fontSize: 16.0),
-        ),
-      ),*/
       theme: appTheme(),
       home: const MainNavigation(),
     );
@@ -140,12 +131,10 @@ class EntriesPage extends StatelessWidget {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<TimeEntry> timeEntries = timesheet.timeEntries;
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Time Entries'),
-        backgroundColor: Colors.deepPurple,
       ),
       body: timeEntries.isEmpty
           ? const Center(
@@ -168,7 +157,7 @@ class EntriesPage extends StatelessWidget {
                   child: ListTile(
                     leading: Icon(
                       Icons.work,
-                      color: Colors.deepPurple[700],
+                      color: colorScheme.primary,
                       size: 30,
                     ),
                     title: Text(

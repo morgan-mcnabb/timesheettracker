@@ -90,8 +90,21 @@ class ClockSection extends StatelessWidget {
                   onPressed: () {
                     _showClockInDialog(context, timesheet);
                   },
-                  icon: const Icon(Icons.play_arrow, size: 20),
-                  label: const Text('Clock In'),
+                  icon: Icon(Icons.play_arrow, size: 20, color: colorScheme.onPrimary),
+                  label: Text('Clock In',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
                 ),
               )
             else
@@ -125,33 +138,33 @@ class ClockSection extends StatelessWidget {
                             timesheet.pauseClock();
                           }
                         },
-                        icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 20),
+                        icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 18, color: colorScheme.onPrimary),
                         label: Text(isPaused ? 'Resume' : 'Pause'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPaused ? colorScheme.secondary : colorScheme.primary,
+                          backgroundColor: isPaused ? Colors.green[700] : colorScheme.primary,
                           foregroundColor: colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       ElevatedButton.icon(
                         onPressed: () {
                           timesheet.clockOut();
                         },
-                        icon: const Icon(Icons.stop, size: 20),
+                        icon: Icon(Icons.stop, size: 18, color: colorScheme.onPrimary),
                         label: const Text('Clock Out'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.error,
-                          foregroundColor: colorScheme.onError,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          backgroundColor: Colors.red,
+                          foregroundColor: colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: textTheme.labelLarge?.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

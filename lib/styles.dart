@@ -90,18 +90,18 @@ ThemeData appTheme() {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: colorScheme.onSurfaceVariant,
+      fillColor: colorScheme.surface,
       contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       border: OutlineInputBorder (
         borderRadius: BorderRadius.circular(12.0),
         borderSide: const BorderSide(),
       ),
       labelStyle: TextStyle (
-        color: colorScheme.onSurfaceVariant,
+        color: colorScheme.onSurface,
         fontSize: 14.0,
       ),
       hintStyle: TextStyle (
-        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+        color: colorScheme.onSurface.withValues(alpha: 0.6),
         fontSize: 14.0,
       ),
       errorStyle: const TextStyle(

@@ -34,8 +34,8 @@ class EntriesPage extends StatelessWidget {
                 return Card(
                   child: ListTile(
                     leading: Icon(
-                      Icons.work,
-                      color: colorScheme.primary,
+                      Icons.business,
+                      color: Colors.blue,
                       size: 30,
                     ),
                     title: Text(
