@@ -20,11 +20,11 @@ class ProjectsOverviewTab extends StatelessWidget {
       };
     }
     for (var entry in timesheet.timeEntries) {
-      if (projectMetrics.containsKey(entry.project?.name)) {
-        projectMetrics[entry.project?.name ]!['hours'] =
-            projectMetrics[entry.project?.name]!['hours']! + entry.billableHours;
-        projectMetrics[entry.project?.name]!['earnings'] =
-            projectMetrics[entry.project?.name]!['earnings']! + entry.totalEarnings;
+      if (projectMetrics.containsKey(entry.project.name)) {
+        projectMetrics[entry.project.name ]!['hours'] =
+            projectMetrics[entry.project.name]!['hours']! + entry.billableHours;
+        projectMetrics[entry.project.name]!['earnings'] =
+            projectMetrics[entry.project.name]!['earnings']! + entry.totalEarnings;
       }
     }
 

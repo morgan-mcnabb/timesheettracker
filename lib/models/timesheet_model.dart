@@ -54,6 +54,11 @@ class TimesheetModel extends ChangeNotifier {
     _currentProject = project;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_clockInTime == null || _currentProject == null) {
+        timer.cancel();
+        return;
+      }
+
       final now = DateTime.now();
       _elapsed = _accumulated + now.difference(_clockInTime!);
       _currentEarnings =
@@ -87,7 +92,7 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   void clockOut() {
-    if (!_isClockedIn) return;
+    if (!_isClockedIn || _currentProject == null || _clockInTime == null) return;
 
     final clockOutTime = DateTime.now();
 
@@ -96,7 +101,7 @@ class TimesheetModel extends ChangeNotifier {
     _timer?.cancel();
 
     Duration totalElapsed = _accumulated;
-    if (!_isPaused && _clockInTime != null) {
+    if (!_isPaused) {
       totalElapsed += clockOutTime.difference(_clockInTime!);
     }
 

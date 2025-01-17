@@ -21,6 +21,19 @@ class TimeEntry {
   });
 
   factory TimeEntry.fromJson(Map<String, dynamic> json) {
+    if (json['start_time'] == null) {
+      throw Exception("Time Entry JSON missing 'start_time' field.");
+    }
+    if (json['end_time'] == null) {
+      throw Exception("Time Entry JSON missing 'end_time' field.");
+    }
+    if (json['project'] == null) {
+      throw Exception("Time Entry JSON missing 'project' field.");
+    }
+    if (json['project']['name'] == null) {
+      throw Exception("Time Entry JSON 'project' missing 'name' field.");
+    }
+
     final startDateTime = DateTime.parse(json['start_time']);
     final endDateTime = DateTime.parse(json['end_time']);
 
@@ -62,7 +75,7 @@ class TimeEntry {
     return {
       'start_time': startDateTime.toIso8601String(),
       'end_time': endDateTime.toIso8601String(),
-      'project': project?.id,
+      'project': project.id,
       'rate': rate,
       'project_name': projectName,
     };

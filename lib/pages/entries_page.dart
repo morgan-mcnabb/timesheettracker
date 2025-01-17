@@ -42,7 +42,7 @@ class EntriesPage extends StatelessWidget {
                       size: 30,
                     ),
                     title: Text(
-                      entry.project?.name ?? "",
+                      entry.project.name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

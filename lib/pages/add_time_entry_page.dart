@@ -210,7 +210,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     .map(
                       (project) => DropdownMenuItem<Project>(
                         value: project,
-                        child: Text(project.name ?? ""),
+                        child: Text(project.name),
                       ),
                     )
                     .toList(),

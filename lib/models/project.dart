@@ -14,6 +14,18 @@ class Project {
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {
+    if (json['id'] == null) {
+      throw Exception("Project JSON missing 'id' field.");
+    }
+    if (json['name'] == null) {
+      throw Exception("Project JSON missing 'name' field.");
+    }
+    if (json['hourly_rate'] == null) {
+      throw Exception("Project JSON missing 'hourly_rate' field.");
+    }
+    if (json['xata'] == null) {
+      throw Exception("Project JSON missing 'xata' field.");
+    }
     return Project(
       id: json['id'],
       name: json['name'],

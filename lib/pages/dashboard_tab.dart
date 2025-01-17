@@ -220,7 +220,7 @@ class ClockSection extends StatelessWidget {
                   .map(
                     (project) => DropdownMenuItem<String>(
                       value: project.name,
-                      child: Text(project.name ?? ""),
+                      child: Text(project.name),
                     ),
                   )
                   .toList(),

@@ -43,9 +43,20 @@ class TimeEntryService {
   static Future<TimeEntryService> create() async {
     var env = DotEnv()..load();
 
+    final apiKey = env['XATA_API_KEY'];
+    final databaseURL = env['XATA_DATABASE_URL'];
+
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception("XATA_API_KEY is missing in environment variables");
+    }
+
+    if (databaseURL == null || databaseURL.isEmpty) {
+      throw Exception("XATA_DATABASE_URL is missing in environment variables");
+    }
+
     return TimeEntryService._(
-      apiKey: env['XATA_API_KEY'] ?? '',
-      databaseUrl: env['XATA_DATABASE_URL'] ?? '',
+      apiKey: apiKey,
+      databaseUrl: databaseURL,
     );
   }
 

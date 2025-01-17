@@ -51,7 +51,7 @@ class ProjectListPage extends StatelessWidget {
                       size: 30,
                     ),
                     title: Text(
-                      project.name ?? "",
+                      project.name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -63,7 +63,7 @@ class ProjectListPage extends StatelessWidget {
                             size: 16, color: Colors.grey[700]),
                         const SizedBox(width: 4),
                         Text(
-                          '\$${project.hourlyRate?.toStringAsFixed(2)} / hr',
+                          '\$${project.hourlyRate.toStringAsFixed(2)} / hr',
                           style: const TextStyle(fontSize: 14),
                         ),
                       ],
