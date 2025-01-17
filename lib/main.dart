@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'constants.dart';
 import 'models/time_entry.dart';
 import 'package:provider/provider.dart';
@@ -6,8 +8,33 @@ import 'models/timesheet_model.dart';
 import 'pages/add_time_entry_page.dart';
 import 'pages/project_list_page.dart';
 import 'pages/dashboard_tab.dart';
+import 'package:dotenv/dotenv.dart';
 
-void main() {
+void main() async {
+  const supabaseUrl = '{{Supabase_url}}';
+  const supabaseAnonKey = '{{Supabase_anon_key}}';
+
+  if (kIsWeb) {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  } else {
+    var env = DotEnv()..load();
+    final url = env['SUPABASE_URL'];
+    final anonKey = env['SUPABASE_ANON_KEY'];
+
+    if (url == null || anonKey == null) {
+      throw Exception(
+          'Missing Supabase environment variables. Please check your .env file.');
+    }
+
+    await Supabase.initialize(
+      url: url,
+      anonKey: anonKey,
+    );
+  }
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => TimesheetModel(),
@@ -169,7 +196,7 @@ class EntriesPage extends StatelessWidget {
                       size: 30,
                     ),
                     title: Text(
-                      entry.project.name,
+                      entry.project?.name ?? '',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -229,8 +256,7 @@ class EntriesPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    onTap: () {
-                    },
+                    onTap: () {},
                   ),
                 );
               },

@@ -1,16 +1,14 @@
-import 'xata_metadata.dart';
-
 class Project {
   final String id;
   final String name;
   final double hourlyRate;
-  final XataMetadata  xata;
+  final DateTime createdAt;
 
   Project({
     required this.id,
     required this.name,
     required this.hourlyRate,
-    required this.xata,
+    required this.createdAt,
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {
@@ -23,16 +21,17 @@ class Project {
     if (json['hourly_rate'] == null) {
       throw Exception("Project JSON missing 'hourly_rate' field.");
     }
-    if (json['xata'] == null) {
-      throw Exception("Project JSON missing 'xata' field.");
+    if (json['created_at'] == null) {
+      throw Exception("Project JSON missing 'created_at' field.");
     }
+
     return Project(
-      id: json['id'],
+      id: json['id'].toString(), // Convert to string since Supabase returns int
       name: json['name'],
       hourlyRate: (json['hourly_rate'] is int)
           ? (json['hourly_rate'] as int).toDouble()
           : json['hourly_rate'].toDouble(),
-      xata: XataMetadata.fromJson(json['xata']),
+      createdAt: DateTime.parse(json['created_at']),
     );
   }
 
@@ -40,7 +39,6 @@ class Project {
     return {
       'name': name,
       'hourly_rate': hourlyRate,
-      'id': id,
     };
   }
 }

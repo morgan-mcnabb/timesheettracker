@@ -51,7 +51,7 @@ class RecentEntriesTab extends StatelessWidget {
                 size: 30,
               ),
               title: Text(
-                entry.project.name,
+                entry.projectName,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -59,16 +59,14 @@ class RecentEntriesTab extends StatelessWidget {
               ),
               subtitle: Row(
                 children: [
-                  Icon(Icons.calendar_today,
-                      size: 16, color: Colors.grey[600]),
+                  Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
                     '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)}',
                     style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(width: 16),
-                  Icon(Icons.access_time,
-                      size: 16, color: Colors.grey[600]),
+                  Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
                     '${_formatDateTime(entry.startTime)} - ${_formatDateTime(entry.endTime)}',
@@ -83,8 +81,7 @@ class RecentEntriesTab extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.timer,
-                          size: 16, color: Colors.grey[700]),
+                      Icon(Icons.timer, size: 16, color: Colors.grey[700]),
                       const SizedBox(width: 4),
                       Text(
                         '${entry.billableHours.toStringAsFixed(2)} hrs',
@@ -111,8 +108,7 @@ class RecentEntriesTab extends StatelessWidget {
                   ),
                 ],
               ),
-              onTap: () {
-              },
+              onTap: () {},
             ),
           );
         },

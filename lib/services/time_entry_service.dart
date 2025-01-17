@@ -1,105 +1,79 @@
 import 'package:timesheettracker/models/time_entry.dart';
-import 'package:http/http.dart' as http;
-import 'package:dotenv/dotenv.dart';
-import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TimeEntryResponse {
   final List<TimeEntry> records;
-  final bool hasMore;
-  final String? nextCursor;
-  final int pageSize;
 
   TimeEntryResponse({
     required this.records,
-    required this.hasMore,
-    this.nextCursor,
-    required this.pageSize,
   });
 
-  factory TimeEntryResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta']['page'];
-    final records = (json['records'] as List)
-        .map((record) => TimeEntry.fromJson(record))
-        .toList();
-
+  factory TimeEntryResponse.fromJson(List<dynamic> json) {
     return TimeEntryResponse(
-      records: records,
-      hasMore: meta['more'] ?? false,
-      nextCursor: meta['cursor'],
-      pageSize: meta['size'],
+      records: json.map((record) => TimeEntry.fromJson(record)).toList(),
     );
   }
 }
 
 class TimeEntryService {
-  final String apiKey;
-  final String databaseUrl;
+  final supabase = Supabase.instance.client;
 
-  TimeEntryService._({
-    required this.apiKey,
-    required this.databaseUrl,
-  });
+  TimeEntryService._();
 
   static Future<TimeEntryService> create() async {
-    var env = DotEnv()..load();
-
-    final apiKey = env['XATA_API_KEY'];
-    final databaseURL = env['XATA_DATABASE_URL'];
-
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception("XATA_API_KEY is missing in environment variables");
-    }
-
-    if (databaseURL == null || databaseURL.isEmpty) {
-      throw Exception("XATA_DATABASE_URL is missing in environment variables");
-    }
-
-    return TimeEntryService._(
-      apiKey: apiKey,
-      databaseUrl: databaseURL,
-    );
+    return TimeEntryService._();
   }
 
   Future<TimeEntryResponse> getTimeEntries() async {
-    final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/time_entries/query'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        "columns": [
-          "start_time",
-          "end_time",
-          "project.*",
-          "rate",
-          "project_name"
-        ],
-        "page": {"size": 500}
-      }),
-    );
+    try {
+      final response = await supabase.from('time_entries').select('''
+            id,
+            start_time,
+            end_time,
+            project:projects (
+              id,
+              name,
+              hourly_rate,
+              created_at
+            ),
+            rate,
+            project_name
+          ''').limit(500);
 
-    if (response.statusCode == 200) {
-      return TimeEntryResponse.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load time entries: ${response.statusCode}');
+      print('Raw Time Entries Response: $response');
+
+      final timeEntries = TimeEntryResponse.fromJson(response as List);
+      print('Parsed Time Entries:');
+      for (var entry in timeEntries.records) {
+        print('''
+          ID: ${entry.id}
+          Date: ${entry.date}
+          Start Time: ${entry.startTime}
+          End Time: ${entry.endTime}
+          Project: ${entry.project?.name}
+          Project Name: ${entry.projectName}
+          Rate: ${entry.rate}
+          ----------------------------------------
+        ''');
+      }
+
+      return timeEntries;
+    } catch (e) {
+      throw Exception('Failed to load time entries: $e');
     }
   }
 
   Future<void> createTimeEntry(TimeEntry timeEntry) async {
-    final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/time_entries/data'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(timeEntry.toJson()),
-    );
-
-    print(response.body);
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Failed to create time entry: ${response.statusCode}');
+    try {
+      await supabase.from('time_entries').insert({
+        'start_time': timeEntry.startTime.toIso8601String(),
+        'end_time': timeEntry.endTime.toIso8601String(),
+        'project': timeEntry.project?.id,
+        'rate': timeEntry.rate,
+        'project_name': timeEntry.project?.name,
+      });
+    } catch (e) {
+      throw Exception('Failed to create time entry: $e');
     }
   }
 }

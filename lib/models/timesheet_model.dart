@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/services/project_service.dart';
 import 'dart:async';
 import 'project.dart';
 import 'time_entry.dart';
+import 'package:timesheettracker/services/time_entry_service.dart';
 
 class TimesheetModel extends ChangeNotifier {
   List<TimeEntry> _timeEntries = [];
@@ -17,6 +19,12 @@ class TimesheetModel extends ChangeNotifier {
 
   Timer? _timer;
 
+  bool _isLoading = false;
+
+  String? _error;
+
+  late final TimeEntryService _timeEntryService;
+
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
 
@@ -26,10 +34,43 @@ class TimesheetModel extends ChangeNotifier {
   Duration get elapsed => _elapsed;
   double get currentEarnings => _currentEarnings;
   Project? get currentProject => _currentProject;
+  bool get isLoading => _isLoading;
+  bool get hasError => _error != null;
+  String? get error => _error;
 
-  void addTimeEntry(TimeEntry entry) {
-    _timeEntries.add(entry);
-    notifyListeners();
+  TimesheetModel() {
+    _initServices();
+  }
+
+  Future<void> _initServices() async {
+    _timeEntryService = await TimeEntryService.create();
+    refreshProjects();
+    refreshTimeEntries();
+  }
+
+  Future<void> refreshTimeEntries() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final response = await _timeEntryService.getTimeEntries();
+      _timeEntries = response.records;
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addTimeEntry(TimeEntry entry) async {
+    try {
+      await _timeEntryService.createTimeEntry(entry);
+      await refreshTimeEntries();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 
   void addProject(Project project) {
@@ -96,8 +137,9 @@ class TimesheetModel extends ChangeNotifier {
     });
   }
 
-  void clockOut() {
-    if (!_isClockedIn || _currentProject == null || _clockInTime == null) return;
+  Future<void> clockOut() async {
+    if (!_isClockedIn || _currentProject == null || _clockInTime == null)
+      return;
 
     final clockOutTime = DateTime.now();
 
@@ -112,10 +154,8 @@ class TimesheetModel extends ChangeNotifier {
 
     final newEntry = TimeEntry(
       id: "",
-      date: DateTime(
-        _clockInTime!.year, 
-        _clockInTime!.month,
-         _clockInTime!.day),
+      date:
+          DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: _clockInTime!,
       endTime: clockOutTime,
       project: _currentProject!,
@@ -123,7 +163,7 @@ class TimesheetModel extends ChangeNotifier {
       projectName: _currentProject!.name,
     );
 
-    _timeEntries.add(newEntry);
+    await addTimeEntry(newEntry);
 
     _elapsed = Duration.zero;
     _accumulated = Duration.zero;
@@ -134,8 +174,9 @@ class TimesheetModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addManualTimeEntry(DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) {
-    final preciseStart = DateTime (
+  void addManualTimeEntry(
+      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) {
+    final preciseStart = DateTime(
       date.year,
       date.month,
       date.day,
@@ -143,7 +184,7 @@ class TimesheetModel extends ChangeNotifier {
       startTime.minute,
       0, // manual entries have to be 0 because TimePicker sucks
     );
-    final preciseEnd = DateTime (
+    final preciseEnd = DateTime(
       date.year,
       date.month,
       date.day,
@@ -152,23 +193,37 @@ class TimesheetModel extends ChangeNotifier {
       0, // time picker sucks
     );
 
+    final newEntry = TimeEntry(
+        id: "",
+        date: DateTime(
+          preciseStart.year,
+          preciseStart.month,
+          preciseStart.day,
+        ),
+        startTime: preciseStart,
+        endTime: preciseEnd,
+        project: project,
+        rate: project.hourlyRate,
+        projectName: project.name);
 
-    final newEntry = TimeEntry (
-      id: "",
-      date: DateTime(
-        preciseStart.year,
-        preciseStart.month,
-        preciseStart.day,
-      ),
-      startTime: preciseStart,
-      endTime: preciseEnd,
-      project: project,
-      rate: project.hourlyRate,
-      projectName: project.name
-    );
-    
     _timeEntries.add(newEntry);
     notifyListeners();
+  }
+
+  Future<void> refreshProjects() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final projectService = await ProjectService.create();
+      final response = await projectService.getProjects();
+      _projects = response.projects;
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   @override

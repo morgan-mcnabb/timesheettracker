@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/models/time_entry.dart';
 import 'summary_tab.dart';
 import 'recent_entries_tab.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,8 @@ class DashboardTab extends StatelessWidget {
                 labelColor: Colors.deepPurple,
                 unselectedLabelColor: Colors.grey,
                 indicatorColor: Colors.deepPurple,
-                labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                labelStyle:
+                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 tabs: [
                   Tab(text: 'Summary', icon: Icon(Icons.dashboard)),
                   Tab(text: 'Recent', icon: Icon(Icons.history)),
@@ -66,7 +68,8 @@ class ClockSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       elevation: 3,
-      margin: const EdgeInsets.symmetric(horizontal: standardPadding, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(
+          horizontal: standardPadding, vertical: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(standardPadding / 2),
         child: Column(
@@ -92,11 +95,13 @@ class ClockSection extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 8.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    textStyle: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ),
               )
@@ -129,21 +134,34 @@ class ClockSection extends StatelessWidget {
                             timesheet.pauseClock();
                           }
                         },
-                        icon: Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 20),
+                        icon: Icon(isPaused ? Icons.play_arrow : Icons.pause,
+                            size: 20),
                         label: Text(isPaused ? 'Resume' : 'Pause'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isPaused ? Colors.green : Colors.teal,
+                          backgroundColor:
+                              isPaused ? Colors.green : Colors.teal,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton.icon(
-                        onPressed: () {
+                        onPressed: () async {
+                          await timesheet.addTimeEntry(TimeEntry(
+                            id: null,
+                            date: DateTime.now(),
+                            startTime: timesheet.clockInTime!,
+                            endTime: DateTime.now(),
+                            projectName: currentProject?.name ?? '',
+                            project: currentProject,
+                            rate: currentEarnings,
+                          ));
                           timesheet.clockOut();
                         },
                         icon: const Icon(Icons.stop, size: 20),
@@ -151,11 +169,13 @@ class ClockSection extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          textStyle: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -189,7 +209,8 @@ class ClockSection extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProjectListPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const ProjectListPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -251,7 +272,8 @@ class ClockSection extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (_dialogFormKey.currentState!.validate()) {
-                  final project = projects.firstWhere((proj) => proj.name == selectedProject);
+                  final project = projects
+                      .firstWhere((proj) => proj.name == selectedProject);
                   timesheet.clockIn(project);
                   Navigator.of(context).pop();
                 }
