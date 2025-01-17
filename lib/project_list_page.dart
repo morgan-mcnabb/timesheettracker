@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
-import 'project.dart';
+import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/xata_metadata.dart';
+import 'package:timesheettracker/services/client_service.dart';
 
-class ProjectListPage extends StatefulWidget {
-  final List<Project> projects;
-  final Function(Project) onAdd;
+class ClientListPage extends StatefulWidget {
+  final List<Client> clients;
+  final Function(Client) onAdd;
   final Function(int) onDelete;
 
-  const ProjectListPage({
+  const ClientListPage({
     Key? key,
-    required this.projects,
+    required this.clients,
     required this.onAdd,
     required this.onDelete,
   }) : super(key: key);
 
   @override
-  _ProjectListPageState createState() => _ProjectListPageState();
+  _ClientListPageState createState() => _ClientListPageState();
 }
 
-class _ProjectListPageState extends State<ProjectListPage> {
-  void _addProject() {
+class _ClientListPageState extends State<ClientListPage> {
+  void _addClient() async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        String projectName = '';
+        String clientName = '';
         double hourlyRate = 0.0;
         final _formKey = GlobalKey<FormState>();
 
         return AlertDialog(
-          title: const Text('Add Project'),
+          title: const Text('Add Client'),
           content: Form(
             key: _formKey,
             child: Column(
@@ -36,11 +38,11 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Project Name'),
                   onChanged: (value) {
-                    projectName = value;
+                    clientName = value;
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a project name';
+                      return 'Please enter a client name';
                     }
                     return null;
                   },
@@ -77,15 +79,34 @@ class _ProjectListPageState extends State<ProjectListPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  final newProject = Project(
-                    name: projectName,
-                    hourlyRate: hourlyRate,
-                  );
-                  widget.onAdd(newProject);
-                  setState(() {});
-                  Navigator.of(context).pop();
+                  try {
+                    final clientService = await ClientService.create();
+                    final newClient = Client(
+                      id: null,
+                      clientName: clientName,
+                      hourlyRate: hourlyRate,
+                      xata: XataMetadata(
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                        version: 1,
+                      ),
+                    );
+                    await clientService.createClient(newClient);
+                    final updatedClients = await clientService.getClients();
+                    setState(() {
+                      widget.clients.clear();
+                      widget.clients.addAll(updatedClients.records);
+                    });
+                    Navigator.of(context).pop();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('Error creating client: ${e.toString()}')),
+                    );
+                  }
                 }
               },
               child: const Text('Add'),
@@ -100,35 +121,50 @@ class _ProjectListPageState extends State<ProjectListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Projects'),
+        title: const Text('Clients'),
       ),
-      body: widget.projects.isEmpty
+      body: widget.clients.isEmpty
           ? const Center(
               child: Text(
-                'No projects added yet.',
+                'No clients added yet.',
                 style: TextStyle(fontSize: 18),
               ),
             )
           : ListView.builder(
-              itemCount: widget.projects.length,
+              itemCount: widget.clients.length,
               itemBuilder: (context, index) {
-                final project = widget.projects[index];
+                final client = widget.clients[index];
                 return ListTile(
-                  title: Text(project.name),
-                  subtitle: Text('Hourly Rate: \$${project.hourlyRate.toStringAsFixed(2)}'),
+                  title: Text(client.clientName),
+                  subtitle: Text(
+                      'Hourly Rate: \$${client.hourlyRate.toStringAsFixed(2)}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      widget.onDelete(index);
-                      setState(() {});
+                    onPressed: () async {
+                      try {
+                        final clientService = await ClientService.create();
+                        await clientService.deleteClient(client.id!);
+                        final updatedClients = await clientService.getClients();
+                        setState(() {
+                          widget.clients.clear();
+                          widget.clients.addAll(updatedClients.records);
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                Text('Error deleting client: ${e.toString()}'),
+                          ),
+                        );
+                      }
                     },
                   ),
                 );
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addProject,
-        tooltip: 'Add Project',
+        onPressed: _addClient,
+        tooltip: 'Add Client',
         child: const Icon(Icons.add),
       ),
     );

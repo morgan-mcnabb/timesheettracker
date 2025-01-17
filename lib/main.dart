@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'time_entry.dart';
+import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/time_entry.dart';
+import 'package:timesheettracker/services/client_service.dart';
 import 'add_time_entry_page.dart';
-import 'project.dart';
 import 'project_list_page.dart';
 import 'dart:async';
+import 'services/time_entry_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,30 +39,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<TimeEntry> _timeEntries = [];
-  List<Project> _projects = [];
+  List<Client> _clients = [];
 
   bool _isClockedIn = false;
   DateTime? _clockInTime;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
   double _currentEarnings = 0.0;
-  Project? _currentProject;
+  Client? _currentClient;
 
   void _clockIn() async {
     if (_isClockedIn) return;
 
-    if (_projects.isEmpty) {
+    if (_clients.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please add a project first before clocking in.')),
+            content: Text('Please add a client first before clocking in.')),
       );
       return;
     }
 
-    Project? selectedProject = await showDialog<Project>(
+    Client? selectedClient = await showDialog<Client>(
       context: context,
       builder: (BuildContext context) {
-        Project? tempSelectedProject;
+        Client? tempSelectedClient;
         final _formKey = GlobalKey<FormState>();
 
         return AlertDialog(
@@ -72,21 +74,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: DropdownButtonHideUnderline(
                 child: ButtonTheme(
                   alignedDropdown: true,
-                  child: DropdownButtonFormField<Project>(
+                  child: DropdownButtonFormField<Client>(
                     isExpanded: true,
-                    items: _projects
+                    items: _clients
                         .map(
-                          (project) => DropdownMenuItem<Project>(
-                            value: project,
+                          (client) => DropdownMenuItem<Client>(
+                            value: client,
                             child: Text(
-                              project.name,
+                              client.clientName,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )
                         .toList(),
-                    onChanged: (Project? newValue) {
-                      tempSelectedProject = newValue;
+                    onChanged: (Client? newValue) {
+                      tempSelectedClient = newValue;
                     },
                     validator: (value) {
                       if (value == null) {
@@ -113,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  Navigator.of(context).pop(tempSelectedProject);
+                  Navigator.of(context).pop(tempSelectedClient);
                 }
               },
               child: const Text('Select'),
@@ -123,14 +125,14 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
 
-    if (selectedProject == null) return;
+    if (selectedClient == null) return;
 
     setState(() {
       _isClockedIn = true;
       _clockInTime = DateTime.now();
       _elapsed = Duration.zero;
       _currentEarnings = 0.0;
-      _currentProject = selectedProject;
+      _currentClient = selectedClient;
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -138,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _elapsed = now.difference(_clockInTime!);
         _currentEarnings =
-            (_elapsed.inSeconds / 3600) * _currentProject!.hourlyRate;
+            (_elapsed.inSeconds / 3600) * _currentClient!.hourlyRate;
       });
     });
   }
@@ -154,27 +156,35 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     final newEntry = TimeEntry(
+      id: null,
       date:
           DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: TimeOfDay.fromDateTime(_clockInTime!),
       endTime: TimeOfDay.fromDateTime(clockOutTime),
-      project: _currentProject!,
-      hourlyRate: _currentProject!.hourlyRate,
+      client: _currentClient!,
+      hourlyRate: _currentClient!.hourlyRate,
     );
 
-    setState(() {
-      _timeEntries.add(newEntry);
-    });
-
-    setState(() {
-      _elapsed = Duration.zero;
-      _currentEarnings = 0.0;
-      _clockInTime = null;
-      _currentProject = null;
+    TimeEntryService.create().then((service) {
+      service.createTimeEntry(newEntry).then((_) async {
+        final timeEntriesResponse = await service.getTimeEntries();
+        setState(() {
+          _timeEntries = List<TimeEntry>.from(timeEntriesResponse.records);
+          _elapsed = Duration.zero;
+          _currentEarnings = 0.0;
+          _clockInTime = null;
+          _currentClient = null;
+        });
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create time entry: $error')),
+        );
+      });
     });
   }
 
-  void _navigateToAddEntry() {
+  void _navigateToAddEntry() async {
+    final timeEntryService = await TimeEntryService.create();
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -184,7 +194,8 @@ class _MyHomePageState extends State<MyHomePage> {
               _timeEntries.add(newEntry);
             });
           },
-          projects: _projects,
+          clients: _clients,
+          timeEntryService: timeEntryService,
         ),
       ),
     );
@@ -194,16 +205,16 @@ class _MyHomePageState extends State<MyHomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProjectListPage(
-          projects: _projects,
-          onAdd: (newProject) {
+        builder: (context) => ClientListPage(
+          clients: _clients,
+          onAdd: (newClient) {
             setState(() {
-              _projects.add(newProject);
+              _clients.add(newClient);
             });
           },
           onDelete: (index) {
             setState(() {
-              _projects.removeAt(index);
+              _clients.removeAt(index);
             });
           },
         ),
@@ -215,6 +226,35 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final timeEntryService = await TimeEntryService.create();
+      final clientService = await ClientService.create();
+
+      final timeEntriesResponse = await timeEntryService.getTimeEntries();
+      final clientsResponse = await clientService.getClients();
+
+      if (mounted) {
+        setState(() {
+          _timeEntries = List<TimeEntry>.from(timeEntriesResponse.records);
+          _clients = List<Client>.from(clientsResponse.records);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   @override
@@ -230,7 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.folder),
-            tooltip: 'Manage Projects',
+            tooltip: 'Manage Clients',
             onPressed: _navigateToManageProjects,
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
@@ -273,7 +313,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         final entry = _timeEntries[index];
                         return ListTile(
                           leading: const Icon(Icons.work),
-                          title: Text(entry.project.name),
+                          title: Text(entry.client.clientName),
                           subtitle: Text(
                             '${entry.date.year}-${_twoDigits(entry.date.month)}-${_twoDigits(entry.date.day)} | ${entry.startTime.format(context)} - ${entry.endTime.format(context)}',
                           ),
@@ -315,7 +355,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'Project: ${_currentProject!.name}',
+                        'Client: ${_currentClient!.clientName}',
                         style: TextStyle(fontSize: 16),
                       ),
                       SizedBox(height: 10),
@@ -414,7 +454,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 minimumSize: const Size(50, 50),
               ),
-            ),
+            )
           ],
         ),
       ),

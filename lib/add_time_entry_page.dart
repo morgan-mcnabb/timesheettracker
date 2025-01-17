@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'time_entry.dart';
-import 'project.dart';
+import 'package:timesheettracker/models/time_entry.dart';
+import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/services/time_entry_service.dart';
 
 class AddTimeEntryPage extends StatefulWidget {
   final Function(TimeEntry) onAdd;
-  final List<Project> projects;
+  final List<Client> clients;
+  final TimeEntryService timeEntryService;
 
   const AddTimeEntryPage({
     Key? key,
     required this.onAdd,
-    required this.projects,
+    required this.clients,
+    required this.timeEntryService,
   }) : super(key: key);
 
   @override
@@ -22,7 +25,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _startTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = TimeOfDay(hour: 17, minute: 0);
-  Project? _selectedProject;
+  Client? _selectedClient;
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -56,18 +59,10 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   }
 
   bool _validateTimeOrder() {
-    final start = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _startTime.hour,
-        _startTime.minute);
-    final end = DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-        _endTime.hour,
-        _endTime.minute);
+    final start = DateTime(_selectedDate.year, _selectedDate.month,
+        _selectedDate.day, _startTime.hour, _startTime.minute);
+    final end = DateTime(_selectedDate.year, _selectedDate.month,
+        _selectedDate.day, _endTime.hour, _endTime.minute);
     return end.isAfter(start);
   }
 
@@ -81,14 +76,26 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       }
 
       final newEntry = TimeEntry(
+        id: null,
         date: _selectedDate,
         startTime: _startTime,
         endTime: _endTime,
-        project: _selectedProject!,
-        hourlyRate: _selectedProject!.hourlyRate,
+        client: _selectedClient!,
+        hourlyRate: _selectedClient!.hourlyRate,
       );
-      widget.onAdd(newEntry);
-      Navigator.pop(context);
+
+      widget.timeEntryService.createTimeEntry(newEntry).then((_) async {
+        // Fetch updated entries from server
+        final timeEntriesResponse =
+            await widget.timeEntryService.getTimeEntries();
+        widget.onAdd(
+            timeEntriesResponse.records.last); // Pass the server-created entry
+        Navigator.pop(context);
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create time entry: $error')),
+        );
+      });
     }
   }
 
@@ -123,27 +130,27 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                     onTap: _pickEndTime,
                   ),
                   SizedBox(height: 20),
-                  DropdownButtonFormField<Project>(
+                  DropdownButtonFormField<Client>(
                     decoration: InputDecoration(
-                      labelText: 'Select Project',
+                      labelText: 'Select Client',
                       border: OutlineInputBorder(),
                     ),
-                    items: widget.projects
+                    items: widget.clients
                         .map(
-                          (project) => DropdownMenuItem<Project>(
-                            value: project,
-                            child: Text(project.name),
+                          (client) => DropdownMenuItem<Client>(
+                            value: client,
+                            child: Text(client.clientName),
                           ),
                         )
                         .toList(),
-                    onChanged: (Project? newValue) {
+                    onChanged: (Client? newValue) {
                       setState(() {
-                        _selectedProject = newValue;
+                        _selectedClient = newValue;
                       });
                     },
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a project';
+                        return 'Please select a client';
                       }
                       return null;
                     },
