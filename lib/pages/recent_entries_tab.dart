@@ -110,8 +110,7 @@ class RecentEntriesTab extends StatelessWidget {
                   ),
                 ],
               ),
-              onTap: () {
-              },
+              onTap: () {},
             ),
           );
         },

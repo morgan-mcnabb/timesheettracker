@@ -1,121 +1,58 @@
 import '../models/project.dart';
-import 'package:http/http.dart' as http;
-import 'package:dotenv/dotenv.dart';
-import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProjectResponse {
-  final List<Project> records;
-  final bool hasMore;
-  final String? nextCursor;
-  final int pageSize;
+  final List<Project> projects;
 
   ProjectResponse({
-    required this.records,
-    required this.hasMore,
-    this.nextCursor,
-    required this.pageSize,
+    required this.projects,
   });
 
-  factory ProjectResponse.fromJson(Map<String, dynamic> json) {
-    final meta = json['meta']['page'];
-    final records = (json['records'] as List)
-        .map((record) => Project.fromJson(record))
-        .toList();
-
+  factory ProjectResponse.fromJson(List<dynamic> json) {
     return ProjectResponse(
-      records: records,
-      hasMore: meta['more'] ?? false,
-      nextCursor: meta['cursor'],
-      pageSize: meta['size'],
+      projects: json.map((record) => Project.fromJson(record)).toList(),
     );
   }
 }
 
 class ProjectService {
-  final String apiKey;
-  final String databaseUrl;
+  final supabase = Supabase.instance.client;
 
-  ProjectService._({
-    required this.apiKey,
-    required this.databaseUrl,
-  });
+  ProjectService._();
 
   static Future<ProjectService> create() async {
-    var env = DotEnv()..load();
-
-    final apiKey = env['XATA_API_KEY'];
-    final databaseURL = env['XATA_DATABASE_URL'];
-
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception("XATA_API_KEY is missing in environment variables");
-    }
-
-    if (databaseURL == null || databaseURL.isEmpty) {
-      throw Exception("XATA_DATABASE_URL is missing in environment variables");
-    }
-
-    return ProjectService._(
-      apiKey: apiKey,
-      databaseUrl: databaseURL,
-    );
+    return ProjectService._();
   }
 
   Future<ProjectResponse> getProjects() async {
-    final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/projects/query'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        "columns": ["xata_id", "name", "hourly_rate"],
-        "page": {"size": 500}
-      }),
-    );
+    try {
+      final response = await supabase
+          .from('projects')
+          .select('id, name, hourly_rate, created_at')
+          .limit(500);
 
-    if (response.statusCode == 200) {
-      final projectResponse =
-          ProjectResponse.fromJson(jsonDecode(response.body));
-      return projectResponse;
-    } else {
-      throw Exception('Failed to load projects');
+      return ProjectResponse.fromJson(response as List);
+    } catch (e) {
+      throw Exception('Failed to load projects: $e');
     }
   }
 
   Future<void> createProject(Project project) async {
-    print('Creating project with data: ${project.toJson()}');
-
-    final response = await http.post(
-      Uri.parse('$databaseUrl/db/time-tracking:main/tables/projects/data'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(project.toJson()),
-    );
-
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception(
-          'Failed to create project: ${response.statusCode} - ${response.body}');
+    try {
+      await supabase.from('projects').insert({
+        'name': project.name,
+        'hourly_rate': project.hourlyRate,
+      });
+    } catch (e) {
+      throw Exception('Failed to create project: $e');
     }
   }
 
   Future<void> deleteProject(String projectId) async {
-    final response = await http.delete(
-      Uri.parse(
-          '$databaseUrl/db/time-tracking:main/tables/projects/data/$projectId'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception(
-          'Failed to delete project: ${response.statusCode} - ${response.body}');
+    try {
+      await supabase.from('projects').delete().eq('id', projectId);
+    } catch (e) {
+      throw Exception('Failed to delete project: $e');
     }
   }
 }

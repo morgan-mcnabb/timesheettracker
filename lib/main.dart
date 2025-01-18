@@ -1,15 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'styles.dart';
-import 'models/time_entry.dart';
 import 'package:provider/provider.dart';
 import 'models/timesheet_model.dart';
 import 'pages/add_time_entry_page.dart';
 import 'pages/project_list_page.dart';
 import 'pages/dashboard_tab.dart';
 import 'pages/entries_page.dart';
-import 'utils.dart';
 
-void main() {
+void main() async {
+  const supabaseUrl = '{{Supabase_url}}';
+  const supabaseAnonKey = '{{Supabase_anon_key}}';
+
+  if (kIsWeb) {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+  } else {
+    await dotenv.load(fileName: ".env");
+    final url = dotenv.env['SUPABASE_URL'];
+    final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+    if (url == null || anonKey == null) {
+      throw Exception(
+          'Missing Supabase environment variables. Please check your .env file.');
+    }
+
+    await Supabase.initialize(
+      url: url,
+      anonKey: anonKey,
+    );
+  }
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => TimesheetModel(),

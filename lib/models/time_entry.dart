@@ -7,7 +7,7 @@ class TimeEntry {
   final DateTime endTime;
   final Project project;
   final String projectName;
-  final double? rate;
+  final double rate;
 
   TimeEntry({
     required this.id,
@@ -26,28 +26,29 @@ class TimeEntry {
     if (json['end_time'] == null) {
       throw Exception("Time Entry JSON missing 'end_time' field.");
     }
-    if (json['project'] == null) {
-      throw Exception("Time Entry JSON missing 'project' field.");
-    }
-    if (json['project']['name'] == null) {
-      throw Exception("Time Entry JSON 'project' missing 'name' field.");
-    }
 
     final startDateTime = DateTime.parse(json['start_time']);
     final endDateTime = DateTime.parse(json['end_time']);
 
+    // Handle nested project data from Supabase join
+    final projectData = json['project'] as Map<String, dynamic>?;
+    if(projectData == null) {
+      throw Exception("Project does not exist.");
+    }
+
+    Project project = Project.fromJson(projectData);
+
     return TimeEntry(
-      id: json['id'],
-      date: DateTime (
+      id: json['id'].toString(),
+      date: DateTime(
         startDateTime.year,
         startDateTime.month,
         startDateTime.day,
       ),
       startTime: startDateTime,
       endTime: endDateTime,
-      project:
-          Project.fromJson(json['project']),
-      projectName: json['project']['name'],
+      project: project,
+      projectName: json['project_name'] ?? '',
       rate: json['rate']?.toDouble() ?? 0.0,
     );
   }
@@ -72,7 +73,7 @@ class TimeEntry {
     return {
       'start_time': startDateTime.toIso8601String(),
       'end_time': endDateTime.toIso8601String(),
-      'project': project.id,
+      'project_id': project?.id,
       'rate': rate,
       'project_name': projectName,
     };

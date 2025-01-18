@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/models/time_entry.dart';
 import 'summary_tab.dart';
 import 'recent_entries_tab.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +72,8 @@ class ClockSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       elevation: 3,
-      margin: const EdgeInsets.symmetric(horizontal: standardPadding, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(
+          horizontal: standardPadding, vertical: 8.0),
       child: Padding(
         padding: const EdgeInsets.all(standardPadding / 2),
         child: Column(
@@ -104,7 +106,7 @@ class ClockSection extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                  ),
+                    ),
                 ),
               )
             else
@@ -152,7 +154,16 @@ class ClockSection extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       ElevatedButton.icon(
-                        onPressed: () {
+                        onPressed: () async {
+                          await timesheet.addTimeEntry(TimeEntry(
+                            id: null,
+                            date: DateTime.now(),
+                            startTime: timesheet.clockInTime!,
+                            endTime: DateTime.now(),
+                            projectName: currentProject?.name ?? '',
+                            project: currentProject!,
+                            rate: currentEarnings,
+                          ));
                           timesheet.clockOut();
                         },
                         icon: Icon(Icons.stop, size: 18, color: colorScheme.onPrimary),
@@ -199,7 +210,8 @@ class ClockSection extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProjectListPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const ProjectListPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -261,7 +273,8 @@ class ClockSection extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (dialogFormKey.currentState!.validate()) {
-                  final project = projects.firstWhere((proj) => proj.name == selectedProject);
+                  final project = projects
+                      .firstWhere((proj) => proj.name == selectedProject);
                   timesheet.clockIn(project);
                   Navigator.of(context).pop();
                 }

@@ -22,11 +22,13 @@ class ProjectsOverviewTab extends StatelessWidget {
       };
     }
     for (var entry in timesheet.timeEntries) {
-      if (projectMetrics.containsKey(entry.project.name)) {
-        projectMetrics[entry.project.name ]!['hours'] =
-            projectMetrics[entry.project.name]!['hours']! + entry.billableHours;
-        projectMetrics[entry.project.name]!['earnings'] =
-            projectMetrics[entry.project.name]!['earnings']! + entry.totalEarnings;
+      if (projectMetrics.containsKey(entry.project?.name)) {
+        projectMetrics[entry.project?.name]!['hours'] =
+            projectMetrics[entry.project?.name]!['hours']! +
+                entry.billableHours;
+        projectMetrics[entry.project?.name]!['earnings'] =
+            projectMetrics[entry.project?.name]!['earnings']! +
+                entry.totalEarnings;
       }
     }
 
@@ -46,8 +48,7 @@ class ProjectsOverviewTab extends StatelessWidget {
       child: GridView.builder(
         itemCount: projects.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount:
-              MediaQuery.of(context).size.width > 600 ? 3 : 2,
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
           mainAxisSpacing: standardPadding,
           crossAxisSpacing: standardPadding,
           childAspectRatio: 3 / 2,
