@@ -183,8 +183,8 @@ class TimesheetModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addManualTimeEntry(
-      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) {
+  Future<void> addManualTimeEntry(
+      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) async {
     final preciseStart = DateTime(
       date.year,
       date.month,
@@ -203,7 +203,7 @@ class TimesheetModel extends ChangeNotifier {
     );
 
     final newEntry = TimeEntry(
-        id: "",
+        id: null,
         date: DateTime(
           preciseStart.year,
           preciseStart.month,
@@ -215,7 +215,7 @@ class TimesheetModel extends ChangeNotifier {
         rate: project.hourlyRate,
         projectName: project.name);
 
-    _timeEntries.add(newEntry);
+    await addTimeEntry(newEntry);
     notifyListeners();
   }
 
@@ -259,9 +259,9 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   List<TimeEntry> getSortedEntries() {
-    var filteredEntries = timeEntries;
+    var filteredEntries = _timeEntries;
     if(_selectedProjectFilter != null) {
-      filteredEntries = timeEntries
+      filteredEntries = _timeEntries
         .where((entry) => entry.project.id == _selectedProjectFilter!.id)
         .toList();
     }

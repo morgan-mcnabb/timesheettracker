@@ -134,7 +134,7 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
     return end.isAfter(start);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       if (!_validateTimeOrder()) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -144,13 +144,23 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       }
 
       final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-      timesheet.addManualTimeEntry(
-        _selectedDate,
-        _startTime,
-        _endTime,
-        _selectedProject!,
+      try {
+        await timesheet.addManualTimeEntry(
+          _selectedDate,
+          _startTime,
+          _endTime,
+          _selectedProject!,
+          );
+
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add time entry: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
-      Navigator.pop(context);
+      }
     }
   }
 
