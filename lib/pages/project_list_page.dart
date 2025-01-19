@@ -73,7 +73,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 child: ListTile(
                   leading: Icon(
                     Icons.work,
-                    color: Colors.deepPurple[700],
+                    color: colorScheme.primary,
                     size: 30,
                   ),
                   title: Text(
@@ -86,7 +86,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                   subtitle: Row(
                     children: [
                       Icon(Icons.attach_money,
-                          size: 16, color: Colors.grey[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '${project.hourlyRate.toStringAsFixed(2)} / hr',
@@ -273,7 +273,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Add'),
