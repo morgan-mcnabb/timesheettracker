@@ -20,8 +20,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final timesheet = Provider.of<TimesheetModel>(context);
-    final List<Project> projects = timesheet.projects;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
