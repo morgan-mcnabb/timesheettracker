@@ -27,16 +27,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
       builder: (BuildContext context, Widget? child) {
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary
               ),
             ),
           ),
@@ -56,16 +59,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       context: context,
       initialTime: _startTime,
       builder: (BuildContext context, Widget? child) {
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary
               ),
             ),
           ),
@@ -85,16 +91,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       context: context,
       initialTime: _endTime,
       builder: (BuildContext context, Widget? child) {
+      final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
           ),
