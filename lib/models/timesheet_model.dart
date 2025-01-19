@@ -5,6 +5,18 @@ import 'project.dart';
 import 'time_entry.dart';
 import 'package:timesheettracker/services/time_entry_service.dart';
 
+class ProjectMetrics {
+  final Project project;
+  double hoursLogged;
+  double earnings;
+
+  ProjectMetrics({
+    required this.project,
+    this.hoursLogged = 0.0,
+    this.earnings = 0.0,
+  });
+}
+
 class TimesheetModel extends ChangeNotifier {
   List<TimeEntry> _timeEntries = [];
   List<Project> _projects = [];
@@ -18,18 +30,15 @@ class TimesheetModel extends ChangeNotifier {
   double _currentEarnings = 0.0;
   Project? _currentProject;
   Project? _selectedProjectFilter;
-
   Timer? _timer;
-
   bool _isLoading = false;
-
   String? _error;
-
+  DateTime? _startDate;
+  DateTime? _endDate;
   late final TimeEntryService _timeEntryService;
 
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
-
   bool get isClockedIn => _isClockedIn;
   bool get isPaused => _isPaused;
   DateTime? get clockInTime => _clockInTime;
@@ -40,6 +49,24 @@ class TimesheetModel extends ChangeNotifier {
   bool get hasError => _error != null;
   String? get error => _error;
   Project? get selectedProjectFilter => _selectedProjectFilter;
+  DateTime? get startDate => _startDate;
+  DateTime? get endDate => _endDate;
+
+  List<ProjectMetrics> get projectMetrics {
+    List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
+    Map<String, ProjectMetrics> metricsMap = {};
+    for (var project in _projects) {
+      metricsMap[project.id] = ProjectMetrics(project: project);
+    }
+    for (var entry in filteredEntries) {
+      if (metricsMap.containsKey(entry.project.id)) {
+        metricsMap[entry.project.id]!.hoursLogged += entry.billableHours;
+        metricsMap[entry.project.id]!.earnings += entry.totalEarnings;
+      }
+    }
+    return metricsMap.values.toList();
+  }
+
 
   TimesheetModel() {
     _initServices();
@@ -273,6 +300,45 @@ class TimesheetModel extends ChangeNotifier {
     });
 
     return filteredEntries;
+  }
+
+  void setDateRange(DateTime? start, DateTime? end) {
+    _startDate = start;
+    _endDate = end;
+    notifyListeners();
+  }
+
+  List<TimeEntry> _applyDateFilter(List<TimeEntry> entries) {
+    if (_startDate == null && _endDate == null) {
+      return entries;
+    }
+
+    return entries.where((entry) {
+      bool afterStart = true;
+      bool beforeEnd = true;
+
+      if (_startDate != null) {
+        afterStart = entry.date.isAtSameMomentAs(_startDate!) ||
+            entry.date.isAfter(_startDate!);
+      }
+      if (_endDate != null) {
+        beforeEnd = entry.date.isAtSameMomentAs(_endDate!) ||
+            entry.date.isBefore(_endDate!);
+      }
+      return afterStart && beforeEnd;
+    }).toList();
+  }
+
+  double get totalEarnings {
+    List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
+    return filteredEntries.fold(
+        0.0, (sum, entry) => sum + entry.totalEarnings);
+  }
+
+  double get totalHoursLogged {
+    List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
+    return filteredEntries.fold(
+        0.0, (sum, entry) => sum + entry.billableHours);
   }
 
   @override
