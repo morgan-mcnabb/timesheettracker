@@ -11,7 +11,7 @@ class EntriesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
-    final List<TimeEntry> timeEntries = timesheet.timeEntries;
+    final List<TimeEntry> timeEntries = timesheet.getSortedEntries();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(

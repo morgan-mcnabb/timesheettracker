@@ -251,6 +251,17 @@ class TimesheetModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<TimeEntry> getSortedEntries() {
+    var sortedEntries = timeEntries;
+    sortedEntries.sort((a,b) {
+      return b.date.compareTo(a.date) != 0
+        ? b.date.compareTo(a.date)
+        : b.startTime.compareTo(a.startTime);
+    });
+
+    return sortedEntries;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
