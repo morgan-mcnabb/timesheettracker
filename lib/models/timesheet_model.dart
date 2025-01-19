@@ -12,6 +12,7 @@ class TimesheetModel extends ChangeNotifier {
   bool _isClockedIn = false;
   bool _isPaused = false;
   DateTime? _clockInTime;
+  DateTime? _pauseTime;
   Duration _elapsed = Duration.zero;
   Duration _accumulated = Duration.zero;
   double _currentEarnings = 0.0;
@@ -112,6 +113,7 @@ class TimesheetModel extends ChangeNotifier {
     if (!_isClockedIn || _isPaused) return;
 
     _isPaused = true;
+    _pauseTime = DateTime.now();
     _accumulated += DateTime.now().difference(_clockInTime!);
     _timer?.cancel();
     notifyListeners();
@@ -122,6 +124,7 @@ class TimesheetModel extends ChangeNotifier {
 
     _isPaused = false;
     _clockInTime = DateTime.now();
+    _pauseTime = null;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_clockInTime == null || _currentProject == null) {
@@ -139,18 +142,21 @@ class TimesheetModel extends ChangeNotifier {
 
   Future<void> clockOut() async {
     if (!_isClockedIn || _currentProject == null || _clockInTime == null)
+    {
       return;
+    }
+    final clockOutTime;
 
-    final clockOutTime = DateTime.now();
+    if(_isPaused && _pauseTime != null) {
+      clockOutTime = _pauseTime;
+    } else {
+      clockOutTime = DateTime.now();
+      _accumulated += clockOutTime.difference(_clockInTime!);
+    }
 
     _isClockedIn = false;
     _isPaused = false;
     _timer?.cancel();
-
-    Duration totalElapsed = _accumulated;
-    if (!_isPaused) {
-      totalElapsed += clockOutTime.difference(_clockInTime!);
-    }
 
     final newEntry = TimeEntry(
       id: "",
@@ -170,6 +176,7 @@ class TimesheetModel extends ChangeNotifier {
     _currentEarnings = 0.0;
     _clockInTime = null;
     _currentProject = null;
+    _pauseTime = null;
 
     notifyListeners();
   }

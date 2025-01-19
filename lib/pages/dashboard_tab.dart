@@ -155,15 +155,6 @@ class ClockSection extends StatelessWidget {
                       const SizedBox(width: 16),
                       ElevatedButton.icon(
                         onPressed: () async {
-                          await timesheet.addTimeEntry(TimeEntry(
-                            id: null,
-                            date: DateTime.now(),
-                            startTime: timesheet.clockInTime!,
-                            endTime: DateTime.now(),
-                            projectName: currentProject?.name ?? '',
-                            project: currentProject!,
-                            rate: currentEarnings,
-                          ));
                           timesheet.clockOut();
                         },
                         icon: Icon(Icons.stop, size: 18, color: colorScheme.onPrimary),
