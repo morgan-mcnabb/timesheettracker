@@ -10,7 +10,6 @@ class SignUpResult {
 class AuthService {
   static final SupabaseClient _client = Supabase.instance.client;
 
-  /// Sign up a new user with email and password.
   static Future<SignUpResult> signUp({
     required String email,
     required String password,
@@ -27,7 +26,6 @@ class AuthService {
     return SignUpResult(user: response.user, session: response.session);
   }
 
-  /// Sign in existing user with email and password.
   static Future<void> signIn({
     required String email,
     required String password,
@@ -42,12 +40,10 @@ class AuthService {
     }
   }
 
-  /// Sign out the currently logged-in user.
   static Future<void> signOut() async {
     await _client.auth.signOut();
   }
 
-  /// Return the currently logged-in user (or null if none).
   static User? get _currentUser {
     return _client.auth.currentUser;
   }
@@ -60,6 +56,5 @@ class AuthService {
     return user;
   }
 
-  /// Stream that notifies when authentication state changes.
   static Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 }

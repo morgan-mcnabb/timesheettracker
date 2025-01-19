@@ -1,5 +1,3 @@
-// lib/pages/auth_page.dart
-
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -43,8 +41,6 @@ class _AuthPageState extends State<AuthPage> {
       } else {
         await AuthService.signIn(email: email, password: password);
       }
-      // Once signed in/signed up successfully, the `main.dart` auth listener
-      // will detect the user change and navigate accordingly.
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -69,7 +65,7 @@ class _AuthPageState extends State<AuthPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: SizedBox(
-            width: 400, // For web, or adapt as needed
+            width: 400, 
             child: Column(
               children: [
                 Text(
@@ -97,7 +93,6 @@ class _AuthPageState extends State<AuthPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Display possible info messages (e.g., "Check your email...")
                 if (_infoMessage != null) ...[
                   Text(
                     _infoMessage!,
@@ -107,7 +102,6 @@ class _AuthPageState extends State<AuthPage> {
                   const SizedBox(height: 12),
                 ],
 
-                // Display error messages
                 if (_errorMessage != null) ...[
                   Text(
                     _errorMessage!,

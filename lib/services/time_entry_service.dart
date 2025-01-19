@@ -42,7 +42,7 @@ class TimeEntryService {
             rate,
             project_name
           ''')
-            .eq('user_id', user.id)   // <-- Only retrieve the current user's entries
+            .eq('user_id', user.id) 
             .limit(500);
 
       print('Raw Time Entries Response: $response');

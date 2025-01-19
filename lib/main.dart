@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -70,17 +69,16 @@ class _MyAppState extends State<MyApp> {
         _currentUser = newUser;
       });
       
-      // Access the TimesheetModel
       final timesheet = Provider.of<TimesheetModel>(
         context,
         listen: false,
       );
 
       if (newUser == null) {
-        // User has signed out => Clear all previous data
+        // user signed out so clear their data
         timesheet.clearData();
       } else {
-        // A user just signed in => Refresh data for the new user
+        // new user signed in, refresh data
         timesheet.refreshProjects();
         timesheet.refreshTimeEntries();
       }
@@ -191,9 +189,7 @@ class SettingsPage extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
-                // Sign out via our AuthService
                 await AuthService.signOut();
-                // onAuthStateChange callback will clear the data or refresh as needed
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
