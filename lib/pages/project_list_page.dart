@@ -283,8 +283,4 @@ class _ProjectListPageState extends State<ProjectListPage> {
       },
     );
   }
-
-  static String twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
-  }
 }
