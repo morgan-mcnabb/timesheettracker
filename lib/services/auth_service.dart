@@ -1,10 +1,17 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+class SignUpResult {
+  final User? user;
+  final Session? session;
+
+  SignUpResult({this.user, this.session});
+}
+
 class AuthService {
   static final SupabaseClient _client = Supabase.instance.client;
 
   /// Sign up a new user with email and password.
-  static Future<void> signUp({
+  static Future<SignUpResult> signUp({
     required String email,
     required String password,
   }) async {
@@ -16,6 +23,8 @@ class AuthService {
     if (response.user == null) {
       throw Exception("There was a problem signing in.");
     }
+
+    return SignUpResult(user: response.user, session: response.session);
   }
 
   /// Sign in existing user with email and password.

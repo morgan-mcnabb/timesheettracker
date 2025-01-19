@@ -17,11 +17,13 @@ class _AuthPageState extends State<AuthPage> {
 
   bool _isLoading = false;
   String? _errorMessage;
+  String? _infoMessage;
 
   Future<void> _handleSubmit() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _infoMessage = null;
     });
 
     final email = _emailController.text.trim();
@@ -29,7 +31,15 @@ class _AuthPageState extends State<AuthPage> {
 
     try {
       if (_isSignUp) {
-        await AuthService.signUp(email: email, password: password);
+        final result = await AuthService.signUp(email: email, password: password);
+
+        if (result.session == null) {
+          setState((){
+            _infoMessage = 
+              'A confirmation link has been emailed to $email.\n'
+              'Please verify your email, then sign in.';
+          });
+        }
       } else {
         await AuthService.signIn(email: email, password: password);
       }
@@ -52,7 +62,9 @@ class _AuthPageState extends State<AuthPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isSignUp ? 'Sign Up' : 'Sign In')),
+      appBar: AppBar(
+        title: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -84,12 +96,27 @@ class _AuthPageState extends State<AuthPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (_errorMessage != null)
+
+                // Display possible info messages (e.g., "Check your email...")
+                if (_infoMessage != null) ...[
+                  Text(
+                    _infoMessage!,
+                    style: const TextStyle(color: Colors.green),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Display error messages
+                if (_errorMessage != null) ...[
                   Text(
                     _errorMessage!,
                     style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                ],
+
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleSubmit,
                   child: _isLoading
@@ -108,6 +135,8 @@ class _AuthPageState extends State<AuthPage> {
                   onPressed: () {
                     setState(() {
                       _isSignUp = !_isSignUp;
+                      _infoMessage = null;
+                      _errorMessage = null;
                     });
                   },
                   child: Text(
