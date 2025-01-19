@@ -74,7 +74,7 @@ class TimeEntryService {
       await supabase.from('time_entries').insert({
         'start_time': timeEntry.startTime.toIso8601String(),
         'end_time': timeEntry.endTime.toIso8601String(),
-        'project': timeEntry.project.id,
+        'project_id': timeEntry.project.id,
         'rate': timeEntry.rate,
         'project_name': timeEntry.project.name,
         'user_id': user.id,
