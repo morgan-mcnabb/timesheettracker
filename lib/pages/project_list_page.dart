@@ -112,8 +112,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                             ElevatedButton(
                               onPressed: () => Navigator.of(context).pop(true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
+                                backgroundColor: colorScheme.error,
+                                foregroundColor: colorScheme.onError,
                               ),
                               child: const Text('Delete'),
                             ),
@@ -274,7 +274,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: colorScheme.onPrimary,
               ),
               child: const Text('Add'),
             ),
