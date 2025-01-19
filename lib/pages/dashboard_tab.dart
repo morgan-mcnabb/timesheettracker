@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:timesheettracker/models/time_entry.dart';
 import 'summary_tab.dart';
 import 'recent_entries_tab.dart';
 import 'package:provider/provider.dart';

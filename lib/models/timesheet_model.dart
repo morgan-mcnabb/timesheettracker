@@ -145,7 +145,7 @@ class TimesheetModel extends ChangeNotifier {
     {
       return;
     }
-    final clockOutTime;
+    final DateTime? clockOutTime;
 
     if(_isPaused && _pauseTime != null) {
       clockOutTime = _pauseTime;
@@ -163,7 +163,7 @@ class TimesheetModel extends ChangeNotifier {
       date:
           DateTime(_clockInTime!.year, _clockInTime!.month, _clockInTime!.day),
       startTime: _clockInTime!,
-      endTime: clockOutTime,
+      endTime: clockOutTime!,
       project: _currentProject!,
       rate: _currentProject!.hourlyRate,
       projectName: _currentProject!.name,

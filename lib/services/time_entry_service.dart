@@ -1,5 +1,6 @@
 import 'package:timesheettracker/models/time_entry.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/auth_service.dart';
 
 class TimeEntryResponse {
   final List<TimeEntry> records;
@@ -26,6 +27,8 @@ class TimeEntryService {
 
   Future<TimeEntryResponse> getTimeEntries() async {
     try {
+      final user = AuthService.getCurrentUser();
+      
       final response = await supabase.from('time_entries').select('''
             id,
             start_time,
@@ -38,7 +41,9 @@ class TimeEntryService {
             ),
             rate,
             project_name
-          ''').limit(500);
+          ''')
+            .eq('user_id', user.id)   // <-- Only retrieve the current user's entries
+            .limit(500);
 
       print('Raw Time Entries Response: $response');
 
@@ -50,7 +55,7 @@ class TimeEntryService {
           Date: ${entry.date}
           Start Time: ${entry.startTime}
           End Time: ${entry.endTime}
-          Project: ${entry.project?.name}
+          Project: ${entry.project.name}
           Project Name: ${entry.projectName}
           Rate: ${entry.rate}
           ----------------------------------------
@@ -65,12 +70,14 @@ class TimeEntryService {
 
   Future<void> createTimeEntry(TimeEntry timeEntry) async {
     try {
+      final user = AuthService.getCurrentUser();
       await supabase.from('time_entries').insert({
         'start_time': timeEntry.startTime.toIso8601String(),
         'end_time': timeEntry.endTime.toIso8601String(),
-        'project': timeEntry.project?.id,
+        'project': timeEntry.project.id,
         'rate': timeEntry.rate,
-        'project_name': timeEntry.project?.name,
+        'project_name': timeEntry.project.name,
+        'user_id': user.id,
       });
     } catch (e) {
       throw Exception('Failed to create time entry: $e');

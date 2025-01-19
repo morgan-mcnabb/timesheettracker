@@ -9,8 +9,12 @@ import 'pages/add_time_entry_page.dart';
 import 'pages/project_list_page.dart';
 import 'pages/dashboard_tab.dart';
 import 'pages/entries_page.dart';
+import 'pages/auth_page.dart';
+import 'services/auth_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   const supabaseUrl = '{{Supabase_url}}';
   const supabaseAnonKey = '{{Supabase_anon_key}}';
 
@@ -43,34 +47,53 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Timesheet Tracker',
-      debugShowCheckedModeBanner: false,
-      theme: appTheme(),
-      home: const MainNavigation(),
-    );
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _currentUser = Supabase.instance.client.auth.currentUser;
+
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      setState(() {
+        _currentUser = data.session?.user;
+      });
+    });
   }
+  @override
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        title: 'Timesheet Tracker',
+        debugShowCheckedModeBanner: false,
+        theme: appTheme(),
+        home: _currentUser == null
+              ? const AuthPage()
+              : const MainNavigation(),
+      );
+    }
 }
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
   @override
-  _MainNavigationState createState() => _MainNavigationState();
+  MainNavigationState createState() => MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final timesheet = Provider.of<TimesheetModel>(context);
-
     final List<Widget> pages = [
       const DashboardTab(),
       const ProjectListPage(),
@@ -138,11 +161,31 @@ class SettingsPage extends StatelessWidget {
         title: const Text('Settings'),
       ),
       body: Center(
-        child: Text(
-          'Settings Page',
-          style: textTheme.headlineMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Settings Page',
+              style: textTheme.headlineMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () async {
+                // Sign out via our AuthService
+                await AuthService.signOut();
+                // Once signed out, the onAuthStateChange subscription
+                // in _MyAppState will set _currentUser to null,
+                // which sends the user back to AuthPage.
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Sign Out'),
+            ),
+          ],
         ),
       ),
     );

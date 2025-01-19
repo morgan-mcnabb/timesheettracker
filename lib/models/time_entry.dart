@@ -73,7 +73,7 @@ class TimeEntry {
     return {
       'start_time': startDateTime.toIso8601String(),
       'end_time': endDateTime.toIso8601String(),
-      'project_id': project?.id,
+      'project_id': project.id,
       'rate': rate,
       'project_name': projectName,
     };
@@ -83,5 +83,5 @@ class TimeEntry {
     return endTime.difference(startTime).inSeconds / 3600.0;
   }
 
-  double get totalEarnings => billableHours * (rate ?? 0);
+  double get totalEarnings => billableHours * rate;
 }

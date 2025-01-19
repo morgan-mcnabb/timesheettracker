@@ -11,8 +11,7 @@ class ProjectsOverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
     final List<Project> projects = timesheet.projects;
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+
 
     Map<String, Map<String, double>> projectMetrics = {};
     for (var project in projects) {
@@ -22,12 +21,12 @@ class ProjectsOverviewTab extends StatelessWidget {
       };
     }
     for (var entry in timesheet.timeEntries) {
-      if (projectMetrics.containsKey(entry.project?.name)) {
-        projectMetrics[entry.project?.name]!['hours'] =
-            projectMetrics[entry.project?.name]!['hours']! +
+      if (projectMetrics.containsKey(entry.project.name)) {
+        projectMetrics[entry.project.name]!['hours'] =
+            projectMetrics[entry.project.name]!['hours']! +
                 entry.billableHours;
-        projectMetrics[entry.project?.name]!['earnings'] =
-            projectMetrics[entry.project?.name]!['earnings']! +
+        projectMetrics[entry.project.name]!['earnings'] =
+            projectMetrics[entry.project.name]!['earnings']! +
                 entry.totalEarnings;
       }
     }
