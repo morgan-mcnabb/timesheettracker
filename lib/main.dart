@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -64,22 +65,39 @@ class _MyAppState extends State<MyApp> {
     _currentUser = Supabase.instance.client.auth.currentUser;
 
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final newUser = data.session?.user;
       setState(() {
-        _currentUser = data.session?.user;
+        _currentUser = newUser;
       });
+      
+      // Access the TimesheetModel
+      final timesheet = Provider.of<TimesheetModel>(
+        context,
+        listen: false,
+      );
+
+      if (newUser == null) {
+        // User has signed out => Clear all previous data
+        timesheet.clearData();
+      } else {
+        // A user just signed in => Refresh data for the new user
+        timesheet.refreshProjects();
+        timesheet.refreshTimeEntries();
+      }
     });
   }
+
   @override
-    Widget build(BuildContext context) {
-      return MaterialApp(
-        title: 'Timesheet Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: appTheme(),
-        home: _currentUser == null
-              ? const AuthPage()
-              : const MainNavigation(),
-      );
-    }
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Timesheet Tracker',
+      debugShowCheckedModeBanner: false,
+      theme: appTheme(),
+      home: _currentUser == null
+          ? const AuthPage()
+          : const MainNavigation(),
+    );
+  }
 }
 
 class MainNavigation extends StatefulWidget {
@@ -175,9 +193,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () async {
                 // Sign out via our AuthService
                 await AuthService.signOut();
-                // Once signed out, the onAuthStateChange subscription
-                // in _MyAppState will set _currentUser to null,
-                // which sends the user back to AuthPage.
+                // onAuthStateChange callback will clear the data or refresh as needed
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -191,5 +207,3 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-
-

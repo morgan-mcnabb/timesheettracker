@@ -233,6 +233,24 @@ class TimesheetModel extends ChangeNotifier {
     }
   }
 
+  void clearData() {
+    _timeEntries = [];
+    _projects = [];
+    _error = null;
+    _isClockedIn = false;
+    _isPaused = false;
+    _clockInTime = null;
+    _pauseTime = null;
+    _elapsed = Duration.zero;
+    _accumulated = Duration.zero;
+    _currentEarnings = 0.0;
+    _currentProject = null;
+    _timer?.cancel();
+    _timer = null;
+
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
