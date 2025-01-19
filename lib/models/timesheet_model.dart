@@ -17,6 +17,7 @@ class TimesheetModel extends ChangeNotifier {
   Duration _accumulated = Duration.zero;
   double _currentEarnings = 0.0;
   Project? _currentProject;
+  Project? _selectedProjectFilter;
 
   Timer? _timer;
 
@@ -38,6 +39,7 @@ class TimesheetModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get hasError => _error != null;
   String? get error => _error;
+  Project? get selectedProjectFilter => _selectedProjectFilter;
 
   TimesheetModel() {
     _initServices();
@@ -251,15 +253,26 @@ class TimesheetModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setProjectFilter(Project? project) {
+    _selectedProjectFilter = project;
+    notifyListeners();
+  }
+
   List<TimeEntry> getSortedEntries() {
-    var sortedEntries = timeEntries;
-    sortedEntries.sort((a,b) {
+    var filteredEntries = timeEntries;
+    if(_selectedProjectFilter != null) {
+      filteredEntries = timeEntries
+        .where((entry) => entry.project.id == _selectedProjectFilter!.id)
+        .toList();
+    }
+
+    filteredEntries.sort((a,b) {
       return b.date.compareTo(a.date) != 0
         ? b.date.compareTo(a.date)
         : b.startTime.compareTo(a.startTime);
     });
 
-    return sortedEntries;
+    return filteredEntries;
   }
 
   @override
