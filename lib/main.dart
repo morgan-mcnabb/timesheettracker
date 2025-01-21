@@ -11,6 +11,7 @@ import 'pages/dashboard_tab.dart';
 import 'pages/entries_page.dart';
 import 'pages/auth_page.dart';
 import 'pages/settings_page.dart';
+import 'pages/invoices_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,7 +69,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _currentUser = newUser;
       });
-      
+
       final timesheet = Provider.of<TimesheetModel>(
         context,
         listen: false,
@@ -81,6 +82,7 @@ class _MyAppState extends State<MyApp> {
         // new user signed in, refresh data
         timesheet.refreshProjects();
         timesheet.refreshTimeEntries();
+        timesheet.refreshInvoices(); 
       }
     });
   }
@@ -114,6 +116,7 @@ class MainNavigationState extends State<MainNavigation> {
       const DashboardTab(),
       const ProjectListPage(),
       const EntriesPage(),
+      const InvoicesPage(),
       const SettingsPage(),
     ];
 
@@ -139,6 +142,10 @@ class MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.list_alt),
             label: 'Entries',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'Invoices',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

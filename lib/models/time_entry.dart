@@ -8,6 +8,7 @@ class TimeEntry {
   final Project project;
   final String projectName;
   final double rate;
+  final String? invoiceId;
 
   TimeEntry({
     required this.id,
@@ -17,6 +18,7 @@ class TimeEntry {
     required this.project,
     required this.rate,
     required this.projectName,
+    required this.invoiceId,
   });
 
   factory TimeEntry.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ class TimeEntry {
       project: project,
       projectName: json['project_name'] ?? '',
       rate: json['rate']?.toDouble() ?? 0.0,
+      invoiceId: json['invoice_id']?.toString(),
     );
   }
 
@@ -76,6 +79,7 @@ class TimeEntry {
       'project_id': project.id,
       'rate': rate,
       'project_name': projectName,
+      'invoice_id': invoiceId
     };
   }
 

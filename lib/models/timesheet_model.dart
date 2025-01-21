@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:timesheettracker/services/project_service.dart';
+import '../services/project_service.dart';
 import 'dart:async';
 import 'project.dart';
 import 'time_entry.dart';
-import 'package:timesheettracker/services/time_entry_service.dart';
+import '../services/time_entry_service.dart';
+import '../services/invoice_service.dart';
+import '../models/invoice.dart';
 
 class ProjectMetrics {
   final Project project;
@@ -35,10 +37,15 @@ class TimesheetModel extends ChangeNotifier {
   String? _error;
   DateTime? _startDate;
   DateTime? _endDate;
+  List<Invoice> _invoices = [];
+
   late final TimeEntryService _timeEntryService;
+  late final InvoiceService _invoiceService;
+
 
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
+  List<Invoice> get invoices => _invoices;
   bool get isClockedIn => _isClockedIn;
   bool get isPaused => _isPaused;
   DateTime? get clockInTime => _clockInTime;
@@ -51,6 +58,7 @@ class TimesheetModel extends ChangeNotifier {
   Project? get selectedProjectFilter => _selectedProjectFilter;
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
+
 
   List<ProjectMetrics> get projectMetrics {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
@@ -74,8 +82,10 @@ class TimesheetModel extends ChangeNotifier {
 
   Future<void> _initServices() async {
     _timeEntryService = await TimeEntryService.create();
+    _invoiceService = await InvoiceService.create();
     refreshProjects();
     refreshTimeEntries();
+    refreshInvoices();
   }
 
   Future<void> refreshTimeEntries() async {
@@ -196,6 +206,7 @@ class TimesheetModel extends ChangeNotifier {
       project: _currentProject!,
       rate: _currentProject!.hourlyRate,
       projectName: _currentProject!.name,
+      invoiceId: null,
     );
 
     await addTimeEntry(newEntry);
@@ -240,7 +251,8 @@ class TimesheetModel extends ChangeNotifier {
         endTime: preciseEnd,
         project: project,
         rate: project.hourlyRate,
-        projectName: project.name);
+        projectName: project.name,
+        invoiceId: null,);
 
     await addTimeEntry(newEntry);
     notifyListeners();
@@ -265,6 +277,7 @@ class TimesheetModel extends ChangeNotifier {
   void clearData() {
     _timeEntries = [];
     _projects = [];
+    _invoices = [];
     _error = null;
     _isClockedIn = false;
     _isPaused = false;
@@ -339,6 +352,63 @@ class TimesheetModel extends ChangeNotifier {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
     return filteredEntries.fold(
         0.0, (sum, entry) => sum + entry.billableHours);
+  }
+
+   List<TimeEntry> getUninvoicedEntries() {
+    return _timeEntries.where((entry) => entry.invoiceId == null).toList();
+  }
+
+  Future<void> refreshInvoices() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final loadedInvoices = await _invoiceService.getInvoices();
+      _invoices = loadedInvoices;
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Invoice> generateInvoice({
+    required String invoiceNumber,
+  }) async {
+    final uninvoiced = getUninvoicedEntries();
+    if (uninvoiced.isEmpty) {
+      throw Exception('No un-invoiced entries available.');
+    }
+
+    final totalAmount = uninvoiced.fold<double>(
+      0.0,
+      (sum, entry) => sum + entry.totalEarnings,
+    );
+
+    final invoiceId = await _invoiceService.createInvoice(
+      invoiceNumber: invoiceNumber,
+      totalAmount: totalAmount,
+    );
+
+    final entryIds = uninvoiced
+        .where((entry) => entry.id != null && entry.id!.isNotEmpty)
+        .map((entry) => entry.id!)
+        .toList();
+    await _timeEntryService.updateTimeEntriesInvoiceId(
+      timeEntryIds: entryIds,
+      invoiceId: invoiceId,
+    );
+
+    await refreshTimeEntries();
+    await refreshInvoices();
+
+    final newInvoice =
+        _invoices.firstWhere((inv) => inv.id == invoiceId, orElse: () {
+      throw Exception('Invoice not found after creation.');
+    });
+
+    return newInvoice;
   }
 
   @override
