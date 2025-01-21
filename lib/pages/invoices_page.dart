@@ -66,14 +66,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Created: ${invoice.createdAt.toLocal()}',
-                              style: textTheme.bodySmall,
-                            ),
-                          ],
+                        subtitle: Text(
+                          'Created: ${invoice.createdAt.toLocal()}',
+                          style: textTheme.bodySmall,
                         ),
                         trailing: Text(
                           '\$${invoice.totalAmount.toStringAsFixed(2)}',
@@ -83,30 +78,118 @@ class _InvoicesPageState extends State<InvoicesPage> {
                           ),
                         ),
                         onTap: () {
-                          // In future, can show invoice details, PDF, etc.
                         },
                       ),
                     );
                   },
                 ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _generateInvoice(context),
+        onPressed: () => _showGenerateInvoiceDialog(context),
         label: const Text('Generate Invoice'),
         icon: const Icon(Icons.add),
       ),
     );
   }
 
-  Future<void> _generateInvoice(BuildContext context) async {
+  void _showGenerateInvoiceDialog(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
+    final allProjects = timesheet.projects;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final selectedProjectIds = <String>{};
+
+        return StatefulBuilder(
+          builder: (dialogContext, setState) {
+            return AlertDialog(
+              title: const Text('Generate Invoice'),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Project(s) to Invoice:',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      if (allProjects.isEmpty)
+                        const Text(
+                          'No projects available.',
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      else
+                        Column(
+                          children: allProjects.map((project) {
+                            final alreadySelected =
+                                selectedProjectIds.contains(project.id);
+                            return CheckboxListTile(
+                              title: Text(project.name),
+                              value: alreadySelected,
+                              onChanged: (checked) {
+                                setState(() {
+                                  if (checked == true) {
+                                    selectedProjectIds.add(project.id);
+                                  } else {
+                                    selectedProjectIds.remove(project.id);
+                                  }
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Note: If no projects are selected, the invoice will include all un-invoiced entries.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final parentContext = this.context;
+                    Navigator.of(dialogContext).pop();
+                    await _generateInvoice(parentContext, selectedProjectIds.toList());
+                  },
+                  icon: const Icon(Icons.check),
+                  label: const Text('Create Invoice'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _generateInvoice(
+    BuildContext parentContext,
+    List<String> projectIds,
+  ) async {
+    final timesheet = Provider.of<TimesheetModel>(parentContext, listen: false);
 
     try {
       final newInvoice = await timesheet.generateInvoice(
         invoiceNumber: DateTime.now().millisecondsSinceEpoch.toString(),
+        projectIds: projectIds,
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(parentContext).showSnackBar(
           SnackBar(
             content: Text('Invoice #${newInvoice.invoiceNumber} created!'),
             backgroundColor: Colors.green,
@@ -115,7 +198,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(parentContext).showSnackBar(
           SnackBar(
             content: Text('$e'),
             backgroundColor: Colors.red,

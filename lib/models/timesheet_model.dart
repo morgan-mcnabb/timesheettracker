@@ -375,13 +375,26 @@ class TimesheetModel extends ChangeNotifier {
 
   Future<Invoice> generateInvoice({
     required String invoiceNumber,
+    List<String>? projectIds,
   }) async {
     final uninvoiced = getUninvoicedEntries();
     if (uninvoiced.isEmpty) {
       throw Exception('No un-invoiced entries available.');
     }
 
-    final totalAmount = uninvoiced.fold<double>(
+    final targetEntries = (projectIds == null || projectIds.isEmpty)
+        ? uninvoiced
+        : uninvoiced
+            .where((entry) => projectIds.contains(entry.project.id))
+            .toList();
+
+    if (targetEntries.isEmpty) {
+      throw Exception(
+        'No un-invoiced entries available for the selected project(s).',
+      );
+    }
+
+    final totalAmount = targetEntries.fold<double>(
       0.0,
       (sum, entry) => sum + entry.totalEarnings,
     );
@@ -391,10 +404,11 @@ class TimesheetModel extends ChangeNotifier {
       totalAmount: totalAmount,
     );
 
-    final entryIds = uninvoiced
+    final entryIds = targetEntries
         .where((entry) => entry.id != null && entry.id!.isNotEmpty)
         .map((entry) => entry.id!)
         .toList();
+
     await _timeEntryService.updateTimeEntriesInvoiceId(
       timeEntryIds: entryIds,
       invoiceId: invoiceId,
