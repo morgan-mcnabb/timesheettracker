@@ -53,18 +53,20 @@ class TimeEntryService {
     }
   }
 
-  Future<void> createTimeEntry(TimeEntry timeEntry) async {
+  Future<String> createTimeEntry(TimeEntry timeEntry) async {
     try {
       final user = AuthService.getCurrentUser();
-      await supabase.from('time_entries').insert({
+      final response = await supabase.from('time_entries').insert({
         'start_time': timeEntry.startTime.toIso8601String(),
         'end_time': timeEntry.endTime.toIso8601String(),
         'project_id': timeEntry.project.id,
         'rate': timeEntry.rate,
         'project_name': timeEntry.project.name,
         'user_id': user.id,
-        'invoice_id': timeEntry.invoiceId
-      });
+        'invoice_id': timeEntry.invoiceId,
+      }).select('id').single();
+
+      return response['id'].toString();
     } catch (e) {
       throw Exception('Failed to create time entry: $e');
     }

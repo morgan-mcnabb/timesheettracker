@@ -6,6 +6,9 @@ import 'time_entry.dart';
 import '../services/time_entry_service.dart';
 import '../services/invoice_service.dart';
 import '../models/invoice.dart';
+import '../services/task_service.dart'; 
+import '../models/task.dart'; 
+
 
 class ProjectMetrics {
   final Project project;
@@ -41,7 +44,7 @@ class TimesheetModel extends ChangeNotifier {
 
   late final TimeEntryService _timeEntryService;
   late final InvoiceService _invoiceService;
-
+  late final TaskService _taskService;
 
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
@@ -83,6 +86,7 @@ class TimesheetModel extends ChangeNotifier {
   Future<void> _initServices() async {
     _timeEntryService = await TimeEntryService.create();
     _invoiceService = await InvoiceService.create();
+    _taskService = await TaskService.create();
     refreshProjects();
     refreshTimeEntries();
     refreshInvoices();
@@ -102,10 +106,35 @@ class TimesheetModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  Future<void> addTimeEntry(TimeEntry entry) async {
+  Future<void> addTasksForTimeEntry({
+    required String timeEntryId,
+    required List<Task> tasks,
+  }) async {
     try {
-      await _timeEntryService.createTimeEntry(entry);
+      for (final task in tasks) {
+        final taskToCreate = Task(
+          timeEntryId: timeEntryId,
+          taskName: task.taskName,
+          notes: task.notes,
+        );
+        await _taskService.createTask(taskToCreate);
+      }
+    } catch (e) {
+      _error = 'Failed to add tasks: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> addTimeEntry({required TimeEntry entry, List<Task>? tasks}) async {
+    try {
+
+      final newEntryId = await _timeEntryService.createTimeEntry(entry);
+      if (tasks != null && tasks.isNotEmpty) {
+        await addTasksForTimeEntry(
+          timeEntryId: newEntryId,
+          tasks: tasks,
+        );
+      }
       await refreshTimeEntries();
     } catch (e) {
       _error = e.toString();
@@ -179,7 +208,7 @@ class TimesheetModel extends ChangeNotifier {
     });
   }
 
-  Future<void> clockOut() async {
+  Future<void> clockOut({List<Task>? tasks}) async {
     if (!_isClockedIn || _currentProject == null || _clockInTime == null)
     {
       return;
@@ -209,7 +238,7 @@ class TimesheetModel extends ChangeNotifier {
       invoiceId: null,
     );
 
-    await addTimeEntry(newEntry);
+    await addTimeEntry(entry: newEntry, tasks: tasks);
 
     _elapsed = Duration.zero;
     _accumulated = Duration.zero;
@@ -222,7 +251,7 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   Future<void> addManualTimeEntry(
-      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project) async {
+      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project, {List<Task>? tasks}) async {
     final preciseStart = DateTime(
       date.year,
       date.month,
@@ -254,7 +283,7 @@ class TimesheetModel extends ChangeNotifier {
         projectName: project.name,
         invoiceId: null,);
 
-    await addTimeEntry(newEntry);
+    await addTimeEntry(entry: newEntry, tasks: tasks);
     notifyListeners();
   }
 
