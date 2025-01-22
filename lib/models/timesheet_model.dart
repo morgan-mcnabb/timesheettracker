@@ -106,6 +106,17 @@ class TimesheetModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<List<Task>> getTasksForTimeEntry(String timeEntryId) async {
+    try {
+      return await _taskService.getTasksForTimeEntry(timeEntryId);
+    } catch (e) {
+      _error = 'Failed to fetch tasks: $e';
+      notifyListeners();
+      return [];
+    }
+  }
+
   Future<void> addTasksForTimeEntry({
     required String timeEntryId,
     required List<Task> tasks,
@@ -139,6 +150,14 @@ class TimesheetModel extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       notifyListeners();
+    }
+  }
+  
+  TimeEntry? findTimeEntryById(String entryId) {
+    try {
+      return _timeEntries.firstWhere((te) => te.id == entryId);
+    } catch (_) {
+      return null;
     }
   }
 

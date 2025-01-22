@@ -25,4 +25,21 @@ class TaskService {
       throw Exception('Failed to create task: $e');
     }
   }
+
+  Future<List<Task>> getTasksForTimeEntry(String timeEntryId) async {
+    try {
+      final user = AuthService.getCurrentUser();
+      final response = await _supabase
+          .from('tasks')
+          .select()
+          .eq('time_entry_id', timeEntryId)
+          .eq('user_id', user.id);
+
+      return response.map<Task>((taskJson) => Task.fromJson(taskJson)).toList();
+    } catch (e) {
+      // log the failure, return nothin
+      //throw Exception('Failed to load tasks for TimeEntry $timeEntryId: $e');
+      return [];
+    }
+  }
 }

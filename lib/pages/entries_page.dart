@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/timesheet_model.dart';
-import '../models/time_entry.dart';
 import '../styles.dart';
 import '../utils.dart';
 import '../models/project.dart';
+import 'time_entry_detail_page.dart';
 
 class EntriesPage extends StatefulWidget {
   const EntriesPage({super.key});
@@ -19,8 +19,8 @@ class _EntriesPageState extends State<EntriesPage> {
   @override
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
-    final List<Project> projects = timesheet.projects;
-    final List<TimeEntry> timeEntries = timesheet.getSortedEntries();
+    final projects = timesheet.projects;
+    final timeEntries = timesheet.getSortedEntries();
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -154,7 +154,16 @@ class _EntriesPageState extends State<EntriesPage> {
                             ),
                           ],
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TimeEntryDetailPage(
+                                timeEntryId: entry.id!,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
