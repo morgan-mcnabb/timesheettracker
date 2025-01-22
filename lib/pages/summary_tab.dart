@@ -13,6 +13,19 @@ class SummaryTab extends StatefulWidget {
 }
 
 class _SummaryTabState extends State<SummaryTab> {
+  @override
+  void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final timesheet = Provider.of<TimesheetModel>(context, listen: false);
+    if (timesheet.startDate == null && timesheet.endDate == null) {
+      final now = DateTime.now();
+      final last30days = now.subtract(const Duration(days: 30));
+      timesheet.setDateRange(last30days, now);
+    }
+  });
+}
+
   Future<void> _selectDateRange(BuildContext context) async {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
     final initialDateRange = timesheet.startDate != null && timesheet.endDate != null
@@ -37,7 +50,7 @@ class _SummaryTabState extends State<SummaryTab> {
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 backgroundColor: Colors.grey[300],
-                foregroundColor: colorScheme.onPrimary, // i CANNOT get this fucking thing to change colors
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
           ),
@@ -57,6 +70,18 @@ class _SummaryTabState extends State<SummaryTab> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // Build a title showing the date range if set, otherwise just "Summary"
+    String summaryTitle;
+    if (timesheet.startDate != null && timesheet.endDate != null) {
+      final startFormatted =
+          '${twoDigits(timesheet.startDate!.month)}/${twoDigits(timesheet.startDate!.day)}/${timesheet.startDate!.year}';
+      final endFormatted =
+          '${twoDigits(timesheet.endDate!.month)}/${twoDigits(timesheet.endDate!.day)}/${timesheet.endDate!.year}';
+      summaryTitle = 'Summary $startFormatted - $endFormatted';
+    } else {
+      summaryTitle = 'Summary';
+    }
+
     return ListView(
       padding: const EdgeInsets.all(standardPadding),
       children: [
@@ -64,7 +89,7 @@ class _SummaryTabState extends State<SummaryTab> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Summary',
+              summaryTitle,
               style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             ElevatedButton.icon(
@@ -72,7 +97,8 @@ class _SummaryTabState extends State<SummaryTab> {
               icon: Icon(Icons.date_range, color: colorScheme.onPrimary),
               label: Text(
                 timesheet.startDate != null && timesheet.endDate != null
-                    ? '${twoDigits(timesheet.startDate!.month)}/${twoDigits(timesheet.startDate!.day)}/${timesheet.startDate!.year} - ${twoDigits(timesheet.endDate!.month)}/${twoDigits(timesheet.endDate!.day)}/${timesheet.endDate!.year}'
+                    ? '${twoDigits(timesheet.startDate!.month)}/${twoDigits(timesheet.startDate!.day)}/${timesheet.startDate!.year} - '
+                      '${twoDigits(timesheet.endDate!.month)}/${twoDigits(timesheet.endDate!.day)}/${timesheet.endDate!.year}'
                     : 'Select Date Range',
                 style: const TextStyle(fontSize: 12),
               ),
@@ -92,8 +118,7 @@ class _SummaryTabState extends State<SummaryTab> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount:
-                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
             mainAxisSpacing: standardPadding,
             crossAxisSpacing: standardPadding,
             childAspectRatio: 3 / 2,
@@ -110,20 +135,19 @@ class _SummaryTabState extends State<SummaryTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.access_time,
-                        color: colorScheme.primary, size: 40),
+                    Icon(Icons.access_time, color: colorScheme.primary, size: 40),
                     const SizedBox(height: 16),
                     Text(
                       'Total Hours Logged',
-                      style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${timesheet.totalHoursLogged.toStringAsFixed(2)} hrs',
                       style: textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary),
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -140,14 +164,11 @@ class _SummaryTabState extends State<SummaryTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.attach_money,
-                        color: colorScheme.primary, size: 40),
+                    Icon(Icons.attach_money, color: colorScheme.primary, size: 40),
                     const SizedBox(height: 16),
                     Text(
                       'Total Earnings',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -181,8 +202,7 @@ class _SummaryTabState extends State<SummaryTab> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: timesheet.projectMetrics.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:
-                      MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
                   mainAxisSpacing: standardPadding,
                   crossAxisSpacing: standardPadding,
                   childAspectRatio: 3 / 2,
