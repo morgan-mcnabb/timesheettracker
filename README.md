@@ -6,15 +6,14 @@ Timesheet Tracker is a comprehensive cross-platform application built with Flutt
 - **Project Management**: Create and manage multiple projects, each associated with specific clients.
 - **Time Tracking**: Clock in and out, pause and resume sessions, and log time entries accurately.
 - **Responsive UI**: Modern and intuitive user interface adhering to Material Design principles.
+- **User Authentication**: Secure login and registration system to manage user accounts.
+- **Cross-Platform Support**: Run seamlessly on Android, iOS, Windows, and MacOS.
+- **Real-Time Data Sync**: Utilize Supabase for real-time data synchronization and backend services.
 
 ## Features Coming Soon
-- **User Authentication**: Secure login and registration system to manage user accounts.
 - **Automated Invoicing**: Generate invoices automatically based on tracked time and project rates.
 - **Invoice Emailing**: Automatically send invoices to clients via email.
 - **Tax Information**: Manage and calculate tax information for accurate billing.
-- **Cross-Platform Support**: Run seamlessly on Android, iOS, Windows, and MacOS.
-- **Real-Time Data Sync**: Utilize Supabase for real-time data synchronization and backend services.
-- **Provider State Management**: Efficient state management using the Provider package.
 
 ## Getting Started
 
