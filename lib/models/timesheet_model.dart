@@ -28,6 +28,8 @@ class TimesheetModel extends ChangeNotifier {
 
   bool _isClockedIn = false;
   bool _isPaused = false;
+  bool _isLoading = false;
+  bool _showUninvoicedOnly = false;
   DateTime? _clockInTime;
   DateTime? _pauseTime;
   Duration _elapsed = Duration.zero;
@@ -36,7 +38,6 @@ class TimesheetModel extends ChangeNotifier {
   Project? _currentProject;
   Project? _selectedProjectFilter;
   Timer? _timer;
-  bool _isLoading = false;
   String? _error;
   DateTime? _startDate;
   DateTime? _endDate;
@@ -51,12 +52,13 @@ class TimesheetModel extends ChangeNotifier {
   List<Invoice> get invoices => _invoices;
   bool get isClockedIn => _isClockedIn;
   bool get isPaused => _isPaused;
+  bool get isLoading => _isLoading;
+  bool get hasError => _error != null;
+  bool get showUninvoicedOnly => _showUninvoicedOnly;
   DateTime? get clockInTime => _clockInTime;
   Duration get elapsed => _elapsed;
   double get currentEarnings => _currentEarnings;
   Project? get currentProject => _currentProject;
-  bool get isLoading => _isLoading;
-  bool get hasError => _error != null;
   String? get error => _error;
   Project? get selectedProjectFilter => _selectedProjectFilter;
   DateTime? get startDate => _startDate;
@@ -76,6 +78,11 @@ class TimesheetModel extends ChangeNotifier {
       }
     }
     return metricsMap.values.toList();
+  }
+
+  void setShowUninvoicedOnly(bool value){
+    _showUninvoicedOnly = value;
+    notifyListeners();
   }
 
 
@@ -337,6 +344,7 @@ class TimesheetModel extends ChangeNotifier {
     _currentProject = null;
     _timer?.cancel();
     _timer = null;
+    _showUninvoicedOnly = false;
 
     notifyListeners();
   }
@@ -348,8 +356,13 @@ class TimesheetModel extends ChangeNotifier {
 
   List<TimeEntry> getSortedEntries() {
     var filteredEntries = _timeEntries;
+
+    if(_showUninvoicedOnly) {
+      filteredEntries = filteredEntries.where((entry) => entry.invoiceId == null).toList();
+    }
+
     if(_selectedProjectFilter != null) {
-      filteredEntries = _timeEntries
+      filteredEntries = filteredEntries
         .where((entry) => entry.project.id == _selectedProjectFilter!.id)
         .toList();
     }
