@@ -20,8 +20,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final timesheet = Provider.of<TimesheetModel>(context);
-    final List<Project> projects = timesheet.projects;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -73,7 +71,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 child: ListTile(
                   leading: Icon(
                     Icons.work,
-                    color: Colors.deepPurple[700],
+                    color: colorScheme.primary,
                     size: 30,
                   ),
                   title: Text(
@@ -86,7 +84,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                   subtitle: Row(
                     children: [
                       Icon(Icons.attach_money,
-                          size: 16, color: Colors.grey[700]),
+                          size: 16, color: colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text(
                         '${project.hourlyRate.toStringAsFixed(2)} / hr',
@@ -112,8 +110,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                             ElevatedButton(
                               onPressed: () => Navigator.of(context).pop(true),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
+                                backgroundColor: colorScheme.error,
+                                foregroundColor: colorScheme.onError,
                               ),
                               child: const Text('Delete'),
                             ),
@@ -273,8 +271,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
               child: const Text('Add'),
             ),
@@ -282,9 +280,5 @@ class _ProjectListPageState extends State<ProjectListPage> {
         );
       },
     );
-  }
-
-  static String twoDigits(int n) {
-    return n.toString().padLeft(2, '0');
   }
 }

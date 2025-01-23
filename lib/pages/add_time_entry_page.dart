@@ -4,6 +4,7 @@ import '../models/timesheet_model.dart';
 import '../models/project.dart';
 import '../styles.dart';
 import '../utils.dart';
+import '../models/task.dart'; 
 
 class AddTimeEntryPage extends StatefulWidget {
   const AddTimeEntryPage({super.key});
@@ -19,6 +20,15 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 17, minute: 0);
   Project? _selectedProject;
+  final TextEditingController _taskNameController = TextEditingController();
+  final TextEditingController _taskNotesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _taskNameController.dispose();
+    _taskNotesController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -27,16 +37,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
       builder: (BuildContext context, Widget? child) {
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary
               ),
             ),
           ),
@@ -56,16 +69,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       context: context,
       initialTime: _startTime,
       builder: (BuildContext context, Widget? child) {
+        final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary
               ),
             ),
           ),
@@ -85,16 +101,19 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
       context: context,
       initialTime: _endTime,
       builder: (BuildContext context, Widget? child) {
+      final colorScheme = Theme.of(context).colorScheme;
+
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
+            colorScheme: ColorScheme.light(
+              primary: colorScheme.primary,
+              onPrimary: colorScheme.onPrimary,
+              onSurface: colorScheme.onSurface,
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
               ),
             ),
           ),
@@ -125,32 +144,57 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
     return end.isAfter(start);
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      if (!_validateTimeOrder()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('End Time must be after Start Time')),
-        );
-        return;
-      }
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-      timesheet.addManualTimeEntry(
+    if (!_validateTimeOrder()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End Time must be after Start Time')),
+      );
+      return;
+    }
+
+    final timesheet = Provider.of<TimesheetModel>(context, listen: false);
+    final String taskName = _taskNameController.text.trim();
+    final String taskNotes = _taskNotesController.text.trim();
+
+    try {
+      final newTasks = <Task>[
+        Task(
+          timeEntryId: '', 
+          taskName: taskName,
+          notes: taskNotes.isEmpty ? null : taskNotes,
+        ),
+      ];
+
+      await timesheet.addManualTimeEntry(
         _selectedDate,
         _startTime,
         _endTime,
         _selectedProject!,
+        tasks: newTasks,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add time entry: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
-      Navigator.pop(context);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
-    final List<Project> projects = timesheet.projects;
+    final projects = timesheet.projects;
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -165,59 +209,47 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
               ListTile(
                 leading: Icon(Icons.calendar_today, color: colorScheme.primary),
                 title: Text(
-                    'Date: ${_selectedDate.year}-${twoDigits(_selectedDate.month)}-${twoDigits(_selectedDate.day)}'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
+                  'Date: '
+                  '${_selectedDate.year}-${twoDigits(_selectedDate.month)}-'
+                  '${twoDigits(_selectedDate.day)}',
                 ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                 onTap: _pickDate,
               ),
               const SizedBox(height: 16),
+
               ListTile(
                 leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('Start Time: ${_startTime.format(context)}'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
-                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                 onTap: _pickStartTime,
               ),
               const SizedBox(height: 16),
+
               ListTile(
                 leading: Icon(Icons.access_time, color: colorScheme.primary),
                 title: Text('End Time: ${_endTime.format(context)}'),
-                trailing: const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey,
-                ),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                 onTap: _pickEndTime,
               ),
               const SizedBox(height: 24),
+
               DropdownButtonFormField<Project>(
                 decoration: InputDecoration(
-                  prefixIcon:
-                      Icon(Icons.work_outline, color: colorScheme.primary,
-                  ),
+                  prefixIcon: Icon(Icons.work_outline, color: colorScheme.primary),
                   labelText: 'Select Project',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
                 items: projects
-                    .map(
-                      (project) => DropdownMenuItem<Project>(
-                        value: project,
-                        child: Text(project.name),
-                      ),
-                    )
+                    .map((project) => DropdownMenuItem<Project>(
+                          value: project,
+                          child: Text(project.name),
+                        ))
                     .toList(),
-                onChanged: (Project? newValue) {
-                  setState(() {
-                    _selectedProject = newValue;
-                  });
+                onChanged: (newValue) {
+                  setState(() => _selectedProject = newValue);
                 },
                 validator: (value) {
                   if (value == null) {
@@ -226,14 +258,43 @@ class _AddTimeEntryPageState extends State<AddTimeEntryPage> {
                   return null;
                 },
               ),
+              const SizedBox(height: 24),
+
+              TextFormField(
+                controller: _taskNameController,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.task, color: colorScheme.primary),
+                  labelText: 'Task Name (Required)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Task name is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _taskNotesController,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.notes, color: colorScheme.primary),
+                  labelText: 'Task Notes (Optional)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+                maxLines: 3,
+              ),
               const SizedBox(height: 32),
+
               ElevatedButton(
                 onPressed: _submit,
-                child: const Text(
-                  'Add Entry',
-                  style: TextStyle(fontSize: 16),
-                ),
-              )
+                child: const Text('Add Entry', style: TextStyle(fontSize: 16)),
+              ),
             ],
           ),
         ),

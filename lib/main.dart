@@ -9,8 +9,13 @@ import 'pages/add_time_entry_page.dart';
 import 'pages/project_list_page.dart';
 import 'pages/dashboard_tab.dart';
 import 'pages/entries_page.dart';
+import 'pages/auth_page.dart';
+import 'pages/settings_page.dart';
+import 'pages/invoices_page.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   const supabaseUrl = '{{Supabase_url}}';
   const supabaseAnonKey = '{{Supabase_anon_key}}';
 
@@ -43,8 +48,44 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _currentUser = Supabase.instance.client.auth.currentUser;
+
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final newUser = data.session?.user;
+      setState(() {
+        _currentUser = newUser;
+      });
+
+      final timesheet = Provider.of<TimesheetModel>(
+        context,
+        listen: false,
+      );
+
+      if (newUser == null) {
+        // user signed out so clear their data
+        timesheet.clearData();
+      } else {
+        // new user signed in, refresh data
+        timesheet.refreshProjects();
+        timesheet.refreshTimeEntries();
+        timesheet.refreshInvoices(); 
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +93,9 @@ class MyApp extends StatelessWidget {
       title: 'Timesheet Tracker',
       debugShowCheckedModeBanner: false,
       theme: appTheme(),
-      home: const MainNavigation(),
+      home: _currentUser == null
+          ? const AuthPage()
+          : const MainNavigation(),
     );
   }
 }
@@ -61,20 +104,19 @@ class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
   @override
-  _MainNavigationState createState() => _MainNavigationState();
+  MainNavigationState createState() => MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final timesheet = Provider.of<TimesheetModel>(context);
-
     final List<Widget> pages = [
       const DashboardTab(),
       const ProjectListPage(),
       const EntriesPage(),
+      const InvoicesPage(),
       const SettingsPage(),
     ];
 
@@ -102,6 +144,10 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Entries',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'Invoices',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
@@ -125,28 +171,3 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 }
-
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: Center(
-        child: Text(
-          'Settings Page',
-          style: textTheme.headlineMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
