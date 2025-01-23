@@ -16,11 +16,14 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(standardPadding),
         child: Column(
@@ -33,9 +36,7 @@ class ProjectCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     project.name,
-                    style: textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -50,7 +51,6 @@ class ProjectCard extends StatelessWidget {
             ),
             const Divider(height: 20, color: Colors.grey),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Hours Logged',
@@ -59,6 +59,7 @@ class ProjectCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '${hoursLogged.toStringAsFixed(2)} hrs',
                   style: textTheme.bodySmall?.copyWith(
@@ -68,9 +69,8 @@ class ProjectCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Earnings',
@@ -78,6 +78,7 @@ class ProjectCard extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '\$${earnings.toStringAsFixed(2)}',
                   style: textTheme.bodySmall?.copyWith(
