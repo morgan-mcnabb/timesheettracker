@@ -82,27 +82,21 @@ class _SummaryTabState extends State<SummaryTab> {
       summaryTitle = 'Summary';
     }
 
-    // Dynamically decide how many columns to use in grids based on screen width
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCountForCards = width > 600 ? 3 : (width < 360 ? 1 : 2);
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final topCardCrossAxisCount = deviceWidth > 600 ? 3 : (deviceWidth < 360 ? 1 : 2);
 
     return ListView(
       padding: const EdgeInsets.all(standardPadding),
       children: [
-        // Use Wrap to avoid horizontal overflow on smaller screens
+        // Title + date range button
         Wrap(
           alignment: WrapAlignment.spaceBetween,
           runSpacing: 8.0,
           children: [
-            // The summary title
             Text(
               summaryTitle,
-              style: textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-
-            // The date range button
             ElevatedButton.icon(
               onPressed: () => _selectDateRange(context),
               icon: Icon(Icons.date_range, color: colorScheme.onPrimary),
@@ -126,15 +120,13 @@ class _SummaryTabState extends State<SummaryTab> {
         ),
         const SizedBox(height: 24),
 
-        // Cards for total hours and earnings, adjusted aspect ratio
         GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCountForCards,
+            crossAxisCount: topCardCrossAxisCount,
             mainAxisSpacing: standardPadding,
             crossAxisSpacing: standardPadding,
-            // Reduce aspect ratio so we don't overflow on smaller screens
             childAspectRatio: 1.1,
           ),
           children: [
@@ -207,7 +199,6 @@ class _SummaryTabState extends State<SummaryTab> {
         ),
         const SizedBox(height: 16),
 
-        // Projects grid
         timesheet.projectMetrics.isEmpty
             ? Center(
                 child: Text(
@@ -215,23 +206,20 @@ class _SummaryTabState extends State<SummaryTab> {
                   style: textTheme.bodyLarge?.copyWith(color: Colors.grey),
                 ),
               )
-            : GridView.builder(
+            : ListView.builder(
+                // so the entire SummaryTab is scrollable, we nest a ListView with shrinkWrap
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: timesheet.projectMetrics.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCountForCards,
-                  mainAxisSpacing: standardPadding,
-                  crossAxisSpacing: standardPadding,
-                  // Reduce aspect ratio here, too
-                  childAspectRatio: 0.9,
-                ),
                 itemBuilder: (context, index) {
                   final metrics = timesheet.projectMetrics[index];
-                  return ProjectCard(
-                    project: metrics.project,
-                    hoursLogged: metrics.hoursLogged,
-                    earnings: metrics.earnings,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: standardPadding),
+                    child: ProjectCard(
+                      project: metrics.project,
+                      hoursLogged: metrics.hoursLogged,
+                      earnings: metrics.earnings,
+                    ),
                   );
                 },
               ),
