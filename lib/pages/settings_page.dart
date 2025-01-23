@@ -11,7 +11,7 @@ class SettingsPage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-  // shouldn't error here - only wait to get to settings page is if the user
+    // shouldn't error here - only wait to get to settings page is if the user
   // is authenticated
     final User user = AuthService.getCurrentUser();
 
@@ -34,11 +34,15 @@ class SettingsPage extends StatelessWidget {
                     size: 30,
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    'Signed in as: ${user.email}',
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      'Signed in as: ${user.email}',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
