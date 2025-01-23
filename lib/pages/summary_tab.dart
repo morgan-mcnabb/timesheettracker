@@ -15,16 +15,16 @@ class SummaryTab extends StatefulWidget {
 class _SummaryTabState extends State<SummaryTab> {
   @override
   void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-    if (timesheet.startDate == null && timesheet.endDate == null) {
-      final now = DateTime.now();
-      final last30days = now.subtract(const Duration(days: 30));
-      timesheet.setDateRange(last30days, now);
-    }
-  });
-}
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final timesheet = Provider.of<TimesheetModel>(context, listen: false);
+      if (timesheet.startDate == null && timesheet.endDate == null) {
+        final now = DateTime.now();
+        final last30days = now.subtract(const Duration(days: 30));
+        timesheet.setDateRange(last30days, now);
+      }
+    });
+  }
 
   Future<void> _selectDateRange(BuildContext context) async {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
@@ -82,16 +82,27 @@ class _SummaryTabState extends State<SummaryTab> {
       summaryTitle = 'Summary';
     }
 
+    // Dynamically decide how many columns to use in grids based on screen width
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCountForCards = width > 600 ? 3 : (width < 360 ? 1 : 2);
+
     return ListView(
       padding: const EdgeInsets.all(standardPadding),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Use Wrap to avoid horizontal overflow on smaller screens
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          runSpacing: 8.0,
           children: [
+            // The summary title
             Text(
               summaryTitle,
-              style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
+
+            // The date range button
             ElevatedButton.icon(
               onPressed: () => _selectDateRange(context),
               icon: Icon(Icons.date_range, color: colorScheme.onPrimary),
@@ -114,14 +125,17 @@ class _SummaryTabState extends State<SummaryTab> {
           ],
         ),
         const SizedBox(height: 24),
+
+        // Cards for total hours and earnings, adjusted aspect ratio
         GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+            crossAxisCount: crossAxisCountForCards,
             mainAxisSpacing: standardPadding,
             crossAxisSpacing: standardPadding,
-            childAspectRatio: 3 / 2,
+            // Reduce aspect ratio so we don't overflow on smaller screens
+            childAspectRatio: 1.1,
           ),
           children: [
             Card(
@@ -185,11 +199,15 @@ class _SummaryTabState extends State<SummaryTab> {
           ],
         ),
         const SizedBox(height: 24),
+
+        // Projects overview heading
         Text(
           'Projects Overview',
           style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
+
+        // Projects grid
         timesheet.projectMetrics.isEmpty
             ? Center(
                 child: Text(
@@ -202,10 +220,11 @@ class _SummaryTabState extends State<SummaryTab> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: timesheet.projectMetrics.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                  crossAxisCount: crossAxisCountForCards,
                   mainAxisSpacing: standardPadding,
                   crossAxisSpacing: standardPadding,
-                  childAspectRatio: 3 / 2,
+                  // Reduce aspect ratio here, too
+                  childAspectRatio: 0.9,
                 ),
                 itemBuilder: (context, index) {
                   final metrics = timesheet.projectMetrics[index];
