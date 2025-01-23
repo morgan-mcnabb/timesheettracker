@@ -19,13 +19,12 @@ class _EntriesPageState extends State<EntriesPage> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-      if(timesheet.startDate == null && timesheet.endDate == null) {
+      if (timesheet.startDate == null && timesheet.endDate == null) {
         final now = DateTime.now();
         final last30days = now.subtract(const Duration(days: 30));
-        timesheet.setDateRange(last30days, now); 
+        timesheet.setDateRange(last30days, now);
       }
     });
   }
@@ -67,7 +66,6 @@ class _EntriesPageState extends State<EntriesPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final timesheet = Provider.of<TimesheetModel>(context);
@@ -92,35 +90,24 @@ class _EntriesPageState extends State<EntriesPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: DropdownButton<Project?>(
               value: _selectedProject,
-              hint: const Text(
-                'Filter by Project',
-                style: TextStyle(color: Colors.white),
-              ),
+              hint: const Text('Filter by Project', style: TextStyle(color: Colors.white)),
               dropdownColor: colorScheme.primary,
               underline: Container(),
               iconEnabledColor: Colors.white,
               items: [
                 const DropdownMenuItem<Project?>(
                   value: null,
-                  child: Text(
-                    'All Projects',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: Text('All Projects', style: TextStyle(color: Colors.white)),
                 ),
                 ...projects.map((project) {
                   return DropdownMenuItem<Project?>(
                     value: project,
-                    child: Text(
-                      project.name,
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                    child: Text(project.name, style: const TextStyle(color: Colors.white)),
                   );
                 }),
               ],
-              onChanged: (Project? selected) {
-                setState(() {
-                  _selectedProject = selected;
-                });
+              onChanged: (selected) {
+                setState(() => _selectedProject = selected);
                 timesheet.setProjectFilter(selected);
               },
             ),
@@ -183,83 +170,95 @@ class _EntriesPageState extends State<EntriesPage> {
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                               elevation: 2,
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.work,
-                                  color: colorScheme.primary,
-                                  size: 30,
-                                ),
-                                title: Text(
-                                  entry.projectName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            TimeEntryDetailPage(timeEntryId: entry.id!),
+                                      ),
+                                    );
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Project name row
+                                      Row(
+                                        children: [
+                                          Icon(Icons.work, color: colorScheme.primary, size: 30),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              entry.projectName,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.calendar_today,
+                                              size: 16, color: colorScheme.onSurfaceVariant),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Icon(Icons.access_time,
+                                              size: 16, color: colorScheme.onSurfaceVariant),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.timer,
+                                                  size: 16, color: colorScheme.secondary),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${entry.billableHours.toStringAsFixed(2)} hrs',
+                                                style: const TextStyle(fontSize: 14),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.attach_money,
+                                                  size: 16, color: colorScheme.secondary),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '\$${entry.totalEarnings.toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                subtitle: Row(
-                                  children: [
-                                    Icon(Icons.calendar_today,
-                                        size: 16, color: colorScheme.onSurfaceVariant),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${entry.date.year}-${twoDigits(entry.date.month)}-${twoDigits(entry.date.day)}',
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Icon(Icons.access_time,
-                                        size: 16, color: colorScheme.onSurfaceVariant),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${formatDateTime(entry.startTime)} - ${formatDateTime(entry.endTime)}',
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                                trailing: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.timer,
-                                            size: 16, color: colorScheme.secondary),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${entry.billableHours.toStringAsFixed(2)} hrs',
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.attach_money,
-                                            size: 16, color: colorScheme.secondary),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '\$${entry.totalEarnings.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => TimeEntryDetailPage(
-                                        timeEntryId: entry.id!,
-                                      ),
-                                    ),
-                                  );
-                                },
                               ),
                             );
                           },

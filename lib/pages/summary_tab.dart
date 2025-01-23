@@ -15,16 +15,16 @@ class SummaryTab extends StatefulWidget {
 class _SummaryTabState extends State<SummaryTab> {
   @override
   void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final timesheet = Provider.of<TimesheetModel>(context, listen: false);
-    if (timesheet.startDate == null && timesheet.endDate == null) {
-      final now = DateTime.now();
-      final last30days = now.subtract(const Duration(days: 30));
-      timesheet.setDateRange(last30days, now);
-    }
-  });
-}
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final timesheet = Provider.of<TimesheetModel>(context, listen: false);
+      if (timesheet.startDate == null && timesheet.endDate == null) {
+        final now = DateTime.now();
+        final last30days = now.subtract(const Duration(days: 30));
+        timesheet.setDateRange(last30days, now);
+      }
+    });
+  }
 
   Future<void> _selectDateRange(BuildContext context) async {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
@@ -82,11 +82,16 @@ class _SummaryTabState extends State<SummaryTab> {
       summaryTitle = 'Summary';
     }
 
+    final deviceWidth = MediaQuery.of(context).size.width;
+    final topCardCrossAxisCount = deviceWidth > 600 ? 3 : (deviceWidth < 360 ? 1 : 2);
+
     return ListView(
       padding: const EdgeInsets.all(standardPadding),
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Title + date range button
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          runSpacing: 8.0,
           children: [
             Text(
               summaryTitle,
@@ -114,14 +119,15 @@ class _SummaryTabState extends State<SummaryTab> {
           ],
         ),
         const SizedBox(height: 24),
+
         GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+            crossAxisCount: topCardCrossAxisCount,
             mainAxisSpacing: standardPadding,
             crossAxisSpacing: standardPadding,
-            childAspectRatio: 3 / 2,
+            childAspectRatio: 1.1,
           ),
           children: [
             Card(
@@ -185,11 +191,14 @@ class _SummaryTabState extends State<SummaryTab> {
           ],
         ),
         const SizedBox(height: 24),
+
+        // Projects overview heading
         Text(
           'Projects Overview',
           style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
+
         timesheet.projectMetrics.isEmpty
             ? Center(
                 child: Text(
@@ -197,22 +206,20 @@ class _SummaryTabState extends State<SummaryTab> {
                   style: textTheme.bodyLarge?.copyWith(color: Colors.grey),
                 ),
               )
-            : GridView.builder(
+            : ListView.builder(
+                // so the entire SummaryTab is scrollable, we nest a ListView with shrinkWrap
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: timesheet.projectMetrics.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-                  mainAxisSpacing: standardPadding,
-                  crossAxisSpacing: standardPadding,
-                  childAspectRatio: 3 / 2,
-                ),
                 itemBuilder: (context, index) {
                   final metrics = timesheet.projectMetrics[index];
-                  return ProjectCard(
-                    project: metrics.project,
-                    hoursLogged: metrics.hoursLogged,
-                    earnings: metrics.earnings,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: standardPadding),
+                    child: ProjectCard(
+                      project: metrics.project,
+                      hoursLogged: metrics.hoursLogged,
+                      earnings: metrics.earnings,
+                    ),
                   );
                 },
               ),
