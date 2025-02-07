@@ -1,14 +1,18 @@
+import 'package:timesheettracker/models/client.dart';
+
 class Project {
   final String id;
   final String name;
   final double hourlyRate;
   final DateTime createdAt;
+  final Client client;
 
   Project({
     required this.id,
     required this.name,
     required this.hourlyRate,
     required this.createdAt,
+    required this.client,
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,7 @@ class Project {
           ? (json['hourly_rate'] as int).toDouble()
           : json['hourly_rate'].toDouble(),
       createdAt: DateTime.parse(json['created_at']),
+      client: Client.fromJson(json['client']),
     );
   }
 
@@ -39,6 +44,7 @@ class Project {
     return {
       'name': name,
       'hourly_rate': hourlyRate,
+      'client_id': client.id,
     };
   }
 }

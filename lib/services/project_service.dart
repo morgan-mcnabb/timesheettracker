@@ -31,7 +31,7 @@ class ProjectService {
 
       final response = await supabase
           .from('projects')
-          .select('id, name, hourly_rate, created_at')
+          .select('id, name, hourly_rate, created_at, client:clients(id, name)')
           .eq('user_id', user.id)
           .limit(500);
 
@@ -48,6 +48,7 @@ class ProjectService {
       await supabase.from('projects').insert({
         'name': project.name,
         'hourly_rate': project.hourlyRate,
+        'client_id': project.client.id,
         'user_id': user.id,
       });
     } catch (e) {
@@ -58,12 +59,12 @@ class ProjectService {
   Future<void> deleteProject(String projectId) async {
     try {
       final user = AuthService.getCurrentUser();
-      
+
       await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId)
-        .eq('user_id', user.id);
+          .from('projects')
+          .delete()
+          .eq('id', projectId)
+          .eq('user_id', user.id);
     } catch (e) {
       throw Exception('Failed to delete project: $e');
     }

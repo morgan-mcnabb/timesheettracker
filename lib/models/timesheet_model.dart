@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/services/client_service.dart';
 import '../services/project_service.dart';
 import 'dart:async';
 import 'project.dart';
@@ -6,9 +8,8 @@ import 'time_entry.dart';
 import '../services/time_entry_service.dart';
 import '../services/invoice_service.dart';
 import '../models/invoice.dart';
-import '../services/task_service.dart'; 
-import '../models/task.dart'; 
-
+import '../services/task_service.dart';
+import '../models/task.dart';
 
 class ProjectMetrics {
   final Project project;
@@ -42,10 +43,12 @@ class TimesheetModel extends ChangeNotifier {
   DateTime? _startDate;
   DateTime? _endDate;
   List<Invoice> _invoices = [];
+  List<Client> _clients = [];
 
   late final TimeEntryService _timeEntryService;
   late final InvoiceService _invoiceService;
   late final TaskService _taskService;
+  late final ClientService _clientService;
 
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
@@ -63,7 +66,7 @@ class TimesheetModel extends ChangeNotifier {
   Project? get selectedProjectFilter => _selectedProjectFilter;
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
-
+  List<Client> get clients => _clients;
 
   List<ProjectMetrics> get projectMetrics {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
@@ -80,11 +83,10 @@ class TimesheetModel extends ChangeNotifier {
     return metricsMap.values.toList();
   }
 
-  void setShowUninvoicedOnly(bool value){
+  void setShowUninvoicedOnly(bool value) {
     _showUninvoicedOnly = value;
     notifyListeners();
   }
-
 
   TimesheetModel() {
     _initServices();
@@ -94,9 +96,29 @@ class TimesheetModel extends ChangeNotifier {
     _timeEntryService = await TimeEntryService.create();
     _invoiceService = await InvoiceService.create();
     _taskService = await TaskService.create();
-    refreshProjects();
-    refreshTimeEntries();
-    refreshInvoices();
+    _clientService = await ClientService.create();
+    await initializeData();
+  }
+
+  Future<void> initializeData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await Future.wait([
+        refreshProjects(),
+        refreshTimeEntries(),
+        refreshInvoices(),
+        refreshClients(),
+      ]);
+
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refreshTimeEntries() async {
@@ -143,9 +165,9 @@ class TimesheetModel extends ChangeNotifier {
     }
   }
 
-  Future<void> addTimeEntry({required TimeEntry entry, List<Task>? tasks}) async {
+  Future<void> addTimeEntry(
+      {required TimeEntry entry, List<Task>? tasks}) async {
     try {
-
       final newEntryId = await _timeEntryService.createTimeEntry(entry);
       if (tasks != null && tasks.isNotEmpty) {
         await addTasksForTimeEntry(
@@ -159,7 +181,7 @@ class TimesheetModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   TimeEntry? findTimeEntryById(String entryId) {
     try {
       return _timeEntries.firstWhere((te) => te.id == entryId);
@@ -235,13 +257,12 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   Future<void> clockOut({List<Task>? tasks}) async {
-    if (!_isClockedIn || _currentProject == null || _clockInTime == null)
-    {
+    if (!_isClockedIn || _currentProject == null || _clockInTime == null) {
       return;
     }
     final DateTime? clockOutTime;
 
-    if(_isPaused && _pauseTime != null) {
+    if (_isPaused && _pauseTime != null) {
       clockOutTime = _pauseTime;
     } else {
       clockOutTime = DateTime.now();
@@ -277,7 +298,8 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   Future<void> addManualTimeEntry(
-      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project, {List<Task>? tasks}) async {
+      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project,
+      {List<Task>? tasks}) async {
     final preciseStart = DateTime(
       date.year,
       date.month,
@@ -296,18 +318,19 @@ class TimesheetModel extends ChangeNotifier {
     );
 
     final newEntry = TimeEntry(
-        id: null,
-        date: DateTime(
-          preciseStart.year,
-          preciseStart.month,
-          preciseStart.day,
-        ),
-        startTime: preciseStart,
-        endTime: preciseEnd,
-        project: project,
-        rate: project.hourlyRate,
-        projectName: project.name,
-        invoiceId: null,);
+      id: null,
+      date: DateTime(
+        preciseStart.year,
+        preciseStart.month,
+        preciseStart.day,
+      ),
+      startTime: preciseStart,
+      endTime: preciseEnd,
+      project: project,
+      rate: project.hourlyRate,
+      projectName: project.name,
+      invoiceId: null,
+    );
 
     await addTimeEntry(entry: newEntry, tasks: tasks);
     notifyListeners();
@@ -357,20 +380,21 @@ class TimesheetModel extends ChangeNotifier {
   List<TimeEntry> getSortedEntries() {
     var filteredEntries = _timeEntries;
 
-    if(_showUninvoicedOnly) {
-      filteredEntries = filteredEntries.where((entry) => entry.invoiceId == null).toList();
+    if (_showUninvoicedOnly) {
+      filteredEntries =
+          filteredEntries.where((entry) => entry.invoiceId == null).toList();
     }
 
-    if(_selectedProjectFilter != null) {
+    if (_selectedProjectFilter != null) {
       filteredEntries = filteredEntries
-        .where((entry) => entry.project.id == _selectedProjectFilter!.id)
-        .toList();
+          .where((entry) => entry.project.id == _selectedProjectFilter!.id)
+          .toList();
     }
 
-    filteredEntries.sort((a,b) {
+    filteredEntries.sort((a, b) {
       return b.date.compareTo(a.date) != 0
-        ? b.date.compareTo(a.date)
-        : b.startTime.compareTo(a.startTime);
+          ? b.date.compareTo(a.date)
+          : b.startTime.compareTo(a.startTime);
     });
 
     return filteredEntries;
@@ -405,17 +429,15 @@ class TimesheetModel extends ChangeNotifier {
 
   double get totalEarnings {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
-    return filteredEntries.fold(
-        0.0, (sum, entry) => sum + entry.totalEarnings);
+    return filteredEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
   }
 
   double get totalHoursLogged {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
-    return filteredEntries.fold(
-        0.0, (sum, entry) => sum + entry.billableHours);
+    return filteredEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
   }
 
-   List<TimeEntry> getUninvoicedEntries() {
+  List<TimeEntry> getUninvoicedEntries() {
     return _timeEntries.where((entry) => entry.invoiceId == null).toList();
   }
 
@@ -490,5 +512,22 @@ class TimesheetModel extends ChangeNotifier {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> refreshClients() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Initialize with eLmpty list if not authenticated
+      _clients = await _clientService.getClients();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+      _clients = []; // Ensure clients is never null
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
