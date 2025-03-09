@@ -47,17 +47,13 @@ class ClientService {
                 postal_code,
                 country)''').eq('user_id', user.id);
 
-      print('Response: $response');
-
       if (response == null || (response as List).isEmpty) {
-        print('No clients found for user_id: ${user.id}');
         return [];
       }
 
       final data = response as List<dynamic>;
       return data.map((clientJson) => Client.fromJson(clientJson)).toList();
     } catch (e) {
-      print('Error in getClients: $e');
       if (e.toString().contains('No authenticated user found')) {
         return [];
       }
@@ -71,7 +67,7 @@ class ClientService {
       final response = await _supabase
           .from('clients')
           .update(client.toJson())
-          .eq('id', client.id)
+          .eq('id', client.id ?? '')
           .eq('user_id', user.id)
           .select(
               'id, name, contact:contacts(id, name, email, phone, website), address:addresses(id, street_1, street_2, city, state_province, postal_code, country)')

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/models/address.dart';
 import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/contact.dart';
 import 'package:timesheettracker/services/client_service.dart';
 import '../services/project_service.dart';
 import 'dart:async';
@@ -10,6 +12,7 @@ import '../services/invoice_service.dart';
 import '../models/invoice.dart';
 import '../services/task_service.dart';
 import '../models/task.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProjectMetrics {
   final Project project;
@@ -44,6 +47,8 @@ class TimesheetModel extends ChangeNotifier {
   DateTime? _endDate;
   List<Invoice> _invoices = [];
   List<Client> _clients = [];
+  List<Contact> _contacts = [];
+  List<Address> _addresses = [];
 
   late final TimeEntryService _timeEntryService;
   late final InvoiceService _invoiceService;
@@ -67,6 +72,8 @@ class TimesheetModel extends ChangeNotifier {
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
   List<Client> get clients => _clients;
+  List<Contact> get contacts => _contacts;
+  List<Address> get addresses => _addresses;
 
   List<ProjectMetrics> get projectMetrics {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
@@ -110,6 +117,8 @@ class TimesheetModel extends ChangeNotifier {
         refreshTimeEntries(),
         refreshInvoices(),
         refreshClients(),
+        loadContacts(),
+        loadAddresses(),
       ]);
 
       _error = null;
@@ -528,6 +537,178 @@ class TimesheetModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> addClient(Client client) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('clients')
+          .insert(client.toJson())
+          .select('*, contact(*), address(*)')
+          .single();
+
+      final newClient = Client.fromJson(response as Map<String, dynamic>);
+      _clients.add(newClient);
+      notifyListeners();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateClient(Client client) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('clients')
+          .update(client.toJson())
+          .eq('id', client.id ?? '')
+          .select('*, contact(*), address(*)')
+          .single();
+
+      final updatedClient = Client.fromJson(response as Map<String, dynamic>);
+      final index = _clients.indexWhere((c) => c.id == client.id);
+      if (index != -1) {
+        _clients[index] = updatedClient;
+        notifyListeners();
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> loadContacts() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final response = await Supabase.instance.client
+        .from('contacts')
+        .select()
+        .eq('user_id', userId)
+        .order('name');
+
+    _contacts = response.map((json) => Contact.fromJson(json)).toList();
+    notifyListeners();
+  }
+
+  Future<void> loadAddresses() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final response = await Supabase.instance.client
+        .from('addresses')
+        .select()
+        .eq('user_id', userId)
+        .order('street_1');
+
+    _addresses = response.map((json) => Address.fromJson(json)).toList();
+    notifyListeners();
+  }
+
+  Future<Contact> addContact(Contact contact) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('contacts')
+          .insert(contact.toJson())
+          .select()
+          .single();
+
+      final newContact = Contact.fromJson(response);
+      _contacts.add(newContact);
+      notifyListeners();
+      return newContact;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Address> addAddress(Address address) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('addresses')
+          .insert(address.toJson())
+          .select()
+          .single();
+
+      final newAddress = Address.fromJson(response);
+      _addresses.add(newAddress);
+      notifyListeners();
+      return newAddress;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Contact> updateContact(Contact contact) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('contacts')
+          .update(contact.toJson())
+          .eq('id', contact.id)
+          .select()
+          .single();
+
+      final updatedContact = Contact.fromJson(response);
+      final index = _contacts.indexWhere((c) => c.id == contact.id);
+      if (index != -1) {
+        _contacts[index] = updatedContact;
+        notifyListeners();
+      }
+      return updatedContact;
+    } catch (e) {
+      throw Exception('Failed to update contact: $e');
+    }
+  }
+
+  Future<void> deleteContact(String contactId) async {
+    try {
+      await Supabase.instance.client
+          .from('contacts')
+          .delete()
+          .eq('id', contactId);
+
+      _contacts.removeWhere((contact) => contact.id == contactId);
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to delete contact: $e');
+    }
+  }
+
+  Future<Address> updateAddress(Address address) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('addresses')
+          .update(address.toJson())
+          .eq('id', address.id)
+          .select()
+          .single();
+
+      final updatedAddress = Address.fromJson(response);
+      final index = _addresses.indexWhere((a) => a.id == address.id);
+      if (index != -1) {
+        _addresses[index] = updatedAddress;
+        notifyListeners();
+      }
+      return updatedAddress;
+    } catch (e) {
+      throw Exception('Failed to update address: $e');
+    }
+  }
+
+  Future<void> deleteAddress(String addressId) async {
+    try {
+      await Supabase.instance.client
+          .from('addresses')
+          .delete()
+          .eq('id', addressId);
+
+      _addresses.removeWhere((address) => address.id == addressId);
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to delete address: $e');
     }
   }
 }
