@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:timesheettracker/models/address.dart';
+import 'package:timesheettracker/models/client.dart';
+import 'package:timesheettracker/models/contact.dart';
+import 'package:timesheettracker/services/client_service.dart';
 import '../services/project_service.dart';
 import 'dart:async';
 import 'project.dart';
@@ -6,9 +10,9 @@ import 'time_entry.dart';
 import '../services/time_entry_service.dart';
 import '../services/invoice_service.dart';
 import '../models/invoice.dart';
-import '../services/task_service.dart'; 
-import '../models/task.dart'; 
-
+import '../services/task_service.dart';
+import '../models/task.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProjectMetrics {
   final Project project;
@@ -42,10 +46,14 @@ class TimesheetModel extends ChangeNotifier {
   DateTime? _startDate;
   DateTime? _endDate;
   List<Invoice> _invoices = [];
+  List<Client> _clients = [];
+  List<Contact> _contacts = [];
+  List<Address> _addresses = [];
 
   late final TimeEntryService _timeEntryService;
   late final InvoiceService _invoiceService;
   late final TaskService _taskService;
+  late final ClientService _clientService;
 
   List<TimeEntry> get timeEntries => _timeEntries;
   List<Project> get projects => _projects;
@@ -63,7 +71,9 @@ class TimesheetModel extends ChangeNotifier {
   Project? get selectedProjectFilter => _selectedProjectFilter;
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
-
+  List<Client> get clients => _clients;
+  List<Contact> get contacts => _contacts;
+  List<Address> get addresses => _addresses;
 
   List<ProjectMetrics> get projectMetrics {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
@@ -80,11 +90,10 @@ class TimesheetModel extends ChangeNotifier {
     return metricsMap.values.toList();
   }
 
-  void setShowUninvoicedOnly(bool value){
+  void setShowUninvoicedOnly(bool value) {
     _showUninvoicedOnly = value;
     notifyListeners();
   }
-
 
   TimesheetModel() {
     _initServices();
@@ -94,9 +103,31 @@ class TimesheetModel extends ChangeNotifier {
     _timeEntryService = await TimeEntryService.create();
     _invoiceService = await InvoiceService.create();
     _taskService = await TaskService.create();
-    refreshProjects();
-    refreshTimeEntries();
-    refreshInvoices();
+    _clientService = await ClientService.create();
+    await initializeData();
+  }
+
+  Future<void> initializeData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await Future.wait([
+        refreshProjects(),
+        refreshTimeEntries(),
+        refreshInvoices(),
+        refreshClients(),
+        loadContacts(),
+        loadAddresses(),
+      ]);
+
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refreshTimeEntries() async {
@@ -143,9 +174,9 @@ class TimesheetModel extends ChangeNotifier {
     }
   }
 
-  Future<void> addTimeEntry({required TimeEntry entry, List<Task>? tasks}) async {
+  Future<void> addTimeEntry(
+      {required TimeEntry entry, List<Task>? tasks}) async {
     try {
-
       final newEntryId = await _timeEntryService.createTimeEntry(entry);
       if (tasks != null && tasks.isNotEmpty) {
         await addTasksForTimeEntry(
@@ -159,7 +190,7 @@ class TimesheetModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   TimeEntry? findTimeEntryById(String entryId) {
     try {
       return _timeEntries.firstWhere((te) => te.id == entryId);
@@ -235,13 +266,12 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   Future<void> clockOut({List<Task>? tasks}) async {
-    if (!_isClockedIn || _currentProject == null || _clockInTime == null)
-    {
+    if (!_isClockedIn || _currentProject == null || _clockInTime == null) {
       return;
     }
     final DateTime? clockOutTime;
 
-    if(_isPaused && _pauseTime != null) {
+    if (_isPaused && _pauseTime != null) {
       clockOutTime = _pauseTime;
     } else {
       clockOutTime = DateTime.now();
@@ -277,7 +307,8 @@ class TimesheetModel extends ChangeNotifier {
   }
 
   Future<void> addManualTimeEntry(
-      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project, {List<Task>? tasks}) async {
+      DateTime date, TimeOfDay startTime, TimeOfDay endTime, Project project,
+      {List<Task>? tasks}) async {
     final preciseStart = DateTime(
       date.year,
       date.month,
@@ -296,18 +327,19 @@ class TimesheetModel extends ChangeNotifier {
     );
 
     final newEntry = TimeEntry(
-        id: null,
-        date: DateTime(
-          preciseStart.year,
-          preciseStart.month,
-          preciseStart.day,
-        ),
-        startTime: preciseStart,
-        endTime: preciseEnd,
-        project: project,
-        rate: project.hourlyRate,
-        projectName: project.name,
-        invoiceId: null,);
+      id: null,
+      date: DateTime(
+        preciseStart.year,
+        preciseStart.month,
+        preciseStart.day,
+      ),
+      startTime: preciseStart,
+      endTime: preciseEnd,
+      project: project,
+      rate: project.hourlyRate,
+      projectName: project.name,
+      invoiceId: null,
+    );
 
     await addTimeEntry(entry: newEntry, tasks: tasks);
     notifyListeners();
@@ -357,20 +389,21 @@ class TimesheetModel extends ChangeNotifier {
   List<TimeEntry> getSortedEntries() {
     var filteredEntries = _timeEntries;
 
-    if(_showUninvoicedOnly) {
-      filteredEntries = filteredEntries.where((entry) => entry.invoiceId == null).toList();
+    if (_showUninvoicedOnly) {
+      filteredEntries =
+          filteredEntries.where((entry) => entry.invoiceId == null).toList();
     }
 
-    if(_selectedProjectFilter != null) {
+    if (_selectedProjectFilter != null) {
       filteredEntries = filteredEntries
-        .where((entry) => entry.project.id == _selectedProjectFilter!.id)
-        .toList();
+          .where((entry) => entry.project.id == _selectedProjectFilter!.id)
+          .toList();
     }
 
-    filteredEntries.sort((a,b) {
+    filteredEntries.sort((a, b) {
       return b.date.compareTo(a.date) != 0
-        ? b.date.compareTo(a.date)
-        : b.startTime.compareTo(a.startTime);
+          ? b.date.compareTo(a.date)
+          : b.startTime.compareTo(a.startTime);
     });
 
     return filteredEntries;
@@ -405,17 +438,15 @@ class TimesheetModel extends ChangeNotifier {
 
   double get totalEarnings {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
-    return filteredEntries.fold(
-        0.0, (sum, entry) => sum + entry.totalEarnings);
+    return filteredEntries.fold(0.0, (sum, entry) => sum + entry.totalEarnings);
   }
 
   double get totalHoursLogged {
     List<TimeEntry> filteredEntries = _applyDateFilter(_timeEntries);
-    return filteredEntries.fold(
-        0.0, (sum, entry) => sum + entry.billableHours);
+    return filteredEntries.fold(0.0, (sum, entry) => sum + entry.billableHours);
   }
 
-   List<TimeEntry> getUninvoicedEntries() {
+  List<TimeEntry> getUninvoicedEntries() {
     return _timeEntries.where((entry) => entry.invoiceId == null).toList();
   }
 
@@ -490,5 +521,194 @@ class TimesheetModel extends ChangeNotifier {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> refreshClients() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Initialize with eLmpty list if not authenticated
+      _clients = await _clientService.getClients();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+      _clients = []; // Ensure clients is never null
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addClient(Client client) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('clients')
+          .insert(client.toJson())
+          .select('*, contact(*), address(*)')
+          .single();
+
+      final newClient = Client.fromJson(response as Map<String, dynamic>);
+      _clients.add(newClient);
+      notifyListeners();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> updateClient(Client client) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('clients')
+          .update(client.toJson())
+          .eq('id', client.id ?? '')
+          .select('*, contact(*), address(*)')
+          .single();
+
+      final updatedClient = Client.fromJson(response as Map<String, dynamic>);
+      final index = _clients.indexWhere((c) => c.id == client.id);
+      if (index != -1) {
+        _clients[index] = updatedClient;
+        notifyListeners();
+      }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<void> loadContacts() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final response = await Supabase.instance.client
+        .from('contacts')
+        .select()
+        .eq('user_id', userId)
+        .order('name');
+
+    _contacts = response.map((json) => Contact.fromJson(json)).toList();
+    notifyListeners();
+  }
+
+  Future<void> loadAddresses() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final response = await Supabase.instance.client
+        .from('addresses')
+        .select()
+        .eq('user_id', userId)
+        .order('street_1');
+
+    _addresses = response.map((json) => Address.fromJson(json)).toList();
+    notifyListeners();
+  }
+
+  Future<Contact> addContact(Contact contact) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('contacts')
+          .insert(contact.toJson())
+          .select()
+          .single();
+
+      final newContact = Contact.fromJson(response);
+      _contacts.add(newContact);
+      notifyListeners();
+      return newContact;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Address> addAddress(Address address) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('addresses')
+          .insert(address.toJson())
+          .select()
+          .single();
+
+      final newAddress = Address.fromJson(response);
+      _addresses.add(newAddress);
+      notifyListeners();
+      return newAddress;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  Future<Contact> updateContact(Contact contact) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('contacts')
+          .update(contact.toJson())
+          .eq('id', contact.id)
+          .select()
+          .single();
+
+      final updatedContact = Contact.fromJson(response);
+      final index = _contacts.indexWhere((c) => c.id == contact.id);
+      if (index != -1) {
+        _contacts[index] = updatedContact;
+        notifyListeners();
+      }
+      return updatedContact;
+    } catch (e) {
+      throw Exception('Failed to update contact: $e');
+    }
+  }
+
+  Future<void> deleteContact(String contactId) async {
+    try {
+      await Supabase.instance.client
+          .from('contacts')
+          .delete()
+          .eq('id', contactId);
+
+      _contacts.removeWhere((contact) => contact.id == contactId);
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to delete contact: $e');
+    }
+  }
+
+  Future<Address> updateAddress(Address address) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('addresses')
+          .update(address.toJson())
+          .eq('id', address.id)
+          .select()
+          .single();
+
+      final updatedAddress = Address.fromJson(response);
+      final index = _addresses.indexWhere((a) => a.id == address.id);
+      if (index != -1) {
+        _addresses[index] = updatedAddress;
+        notifyListeners();
+      }
+      return updatedAddress;
+    } catch (e) {
+      throw Exception('Failed to update address: $e');
+    }
+  }
+
+  Future<void> deleteAddress(String addressId) async {
+    try {
+      await Supabase.instance.client
+          .from('addresses')
+          .delete()
+          .eq('id', addressId);
+
+      _addresses.removeWhere((address) => address.id == addressId);
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to delete address: $e');
+    }
   }
 }

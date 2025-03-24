@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:timesheettracker/services/project_service.dart';
 import '../models/timesheet_model.dart';
@@ -46,11 +47,13 @@ class _ProjectListPageState extends State<ProjectListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.business, size: 80, color: colorScheme.onSurfaceVariant),
+                  Icon(Icons.business,
+                      size: 80, color: colorScheme.onSurfaceVariant),
                   const SizedBox(height: 16),
                   Text(
                     'No projects added yet.',
-                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+                    style: textTheme.bodyLarge
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -75,7 +78,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     size: 30,
                   ),
                   title: Text(
-                    project.name,
+                    project.name + ' - ' + project.client.name,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -166,6 +169,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
     final timesheet = Provider.of<TimesheetModel>(context, listen: false);
     String projectName = '';
     String hourlyRateStr = '';
+    String? selectedClientId;
     final dialogFormKey = GlobalKey<FormState>();
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -192,6 +196,31 @@ class _ProjectListPageState extends State<ProjectListPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a project name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.business, color: colorScheme.primary),
+                    labelText: 'Client',
+                    border: const OutlineInputBorder(),
+                  ),
+                  value: selectedClientId,
+                  items: timesheet.clients.map((client) {
+                    return DropdownMenuItem<String>(
+                      value: client.id,
+                      child: Text(client.name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    selectedClientId = value;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a client';
                     }
                     return null;
                   },
@@ -243,6 +272,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       name: projectName,
                       hourlyRate: hourlyRate,
                       createdAt: DateTime.now(),
+                      client: timesheet.clients.firstWhere(
+                          (client) => client.id == selectedClientId!),
                     );
 
                     final projectService = await ProjectService.create();

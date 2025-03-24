@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:timesheettracker/pages/clients_page.dart';
 import 'styles.dart';
 import 'package:provider/provider.dart';
 import 'models/timesheet_model.dart';
@@ -64,7 +65,7 @@ class _MyAppState extends State<MyApp> {
 
     _currentUser = Supabase.instance.client.auth.currentUser;
 
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       final newUser = data.session?.user;
       setState(() {
         _currentUser = newUser;
@@ -76,13 +77,9 @@ class _MyAppState extends State<MyApp> {
       );
 
       if (newUser == null) {
-        // user signed out so clear their data
         timesheet.clearData();
       } else {
-        // new user signed in, refresh data
-        timesheet.refreshProjects();
-        timesheet.refreshTimeEntries();
-        timesheet.refreshInvoices(); 
+        await timesheet.initializeData();
       }
     });
   }
@@ -93,9 +90,7 @@ class _MyAppState extends State<MyApp> {
       title: 'Timesheet Tracker',
       debugShowCheckedModeBanner: false,
       theme: appTheme(),
-      home: _currentUser == null
-          ? const AuthPage()
-          : const MainNavigation(),
+      home: _currentUser == null ? const AuthPage() : const MainNavigation(),
     );
   }
 }
@@ -115,6 +110,7 @@ class MainNavigationState extends State<MainNavigation> {
     final List<Widget> pages = [
       const DashboardTab(),
       const ProjectListPage(),
+      const ClientsPage(),
       const EntriesPage(),
       const InvoicesPage(),
       const SettingsPage(),
@@ -140,6 +136,10 @@ class MainNavigationState extends State<MainNavigation> {
             label: 'Projects',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.business),
+            label: 'Clients',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.list_alt),
             label: 'Entries',
           ),
@@ -153,7 +153,7 @@ class MainNavigationState extends State<MainNavigation> {
           ),
         ],
       ),
-      floatingActionButton: (_currentIndex == 0 || _currentIndex == 2)
+      floatingActionButton: (_currentIndex == 0 || _currentIndex == 3)
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
